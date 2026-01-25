@@ -21,20 +21,23 @@ public class UdpResponse {
         private long type;          // uint32_t (4字节)
         private float density;      // float (4字节)
         private int field6;         // uint16_t (2字节)
-        private byte[] terrainData; // 20*(N-1) 字节，多个点地形数据
+        private byte[] terrainData; // 变长地形数据
         
         public ResponseItem() {
         }
         
-        public static ResponseItem decode(ByteBuffer buffer, int terrainSize) {
+        public static ResponseItem decode(ByteBuffer buffer) {
             ResponseItem item = new ResponseItem();
             item.aLongitude = ByteOrderUtils.readDouble(buffer);
             item.bLongitude = ByteOrderUtils.readDouble(buffer);
             item.type = ByteOrderUtils.readUint32(buffer);
             item.density = ByteOrderUtils.readFloat(buffer);
             item.field6 = ByteOrderUtils.readUint16(buffer);
-            if (terrainSize > 0) {
-                item.terrainData = new byte[terrainSize];
+            
+            // 读取地形数据长度
+            int terrainLength = ByteOrderUtils.readUint16(buffer);
+            if (terrainLength > 0) {
+                item.terrainData = new byte[terrainLength];
                 buffer.get(item.terrainData);
             }
             return item;
@@ -46,13 +49,17 @@ public class UdpResponse {
             ByteOrderUtils.writeUint32(buffer, type);
             ByteOrderUtils.writeFloat(buffer, density);
             ByteOrderUtils.writeUint16(buffer, field6);
-            if (terrainData != null) {
+            
+            int len = (terrainData != null) ? terrainData.length : 0;
+            ByteOrderUtils.writeUint16(buffer, len);
+            if (len > 0) {
                 buffer.put(terrainData);
             }
         }
         
         public int getSize() {
-            return 8 + 8 + 4 + 4 + 2 + (terrainData != null ? terrainData.length : 0);
+            // 8+8+4+4+2 + 2(length) + data
+            return 8 + 8 + 4 + 4 + 2 + 2 + (terrainData != null ? terrainData.length : 0);
         }
         
         // Getters and Setters
@@ -117,19 +124,9 @@ public class UdpResponse {
         response.requestId = ByteOrderUtils.readUint64(buffer);
         response.count = ByteOrderUtils.readUint32(buffer);
         
-        // 每个item的基础大小：8+8+4+4+2 = 26字节
-        // 第一个item没有terrain数据，后续item有20*(N-1)字节
-        int baseItemSize = 26;
-        int remaining = buffer.remaining();
-        
-        for (int i = 0; i < response.count && remaining >= baseItemSize; i++) {
-            int terrainSize = (i == 0) ? 0 : 20 * (i - 1);
-            if (remaining < baseItemSize + terrainSize) {
-                terrainSize = remaining - baseItemSize;
-            }
-            ResponseItem item = ResponseItem.decode(buffer, terrainSize);
+        for (int i = 0; i < response.count && buffer.hasRemaining(); i++) {
+            ResponseItem item = ResponseItem.decode(buffer);
             response.items.add(item);
-            remaining = buffer.remaining();
         }
         
         return response;

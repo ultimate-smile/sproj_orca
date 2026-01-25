@@ -123,7 +123,7 @@ public class UdpResponse {
         int remaining = buffer.remaining();
         
         for (int i = 0; i < response.count && remaining >= baseItemSize; i++) {
-            int terrainSize = (i == 0) ? 0 : 20 * (i - 1);
+            int terrainSize = 20 * i;
             if (remaining < baseItemSize + terrainSize) {
                 terrainSize = remaining - baseItemSize;
             }

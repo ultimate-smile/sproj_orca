@@ -5,6 +5,7 @@
 ### 1. 协议层测试
 - `UdpRequestTest.java` - UDP请求编解码测试
 - `UdpResponseTest.java` - UDP响应编解码测试
+- `FixedUdpResponseSemanticTest.java` - Fixed UDP response semantic test
 - `FragmentHeaderTest.java` - 分片头部编解码测试
 - `FragmentReassemblerTest.java` - 分片重组测试
 - `RealWorldUdpPacketTest.java` - 真实UDP报文测试

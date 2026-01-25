@@ -1,7 +1,9 @@
 package com.orca.com.service;
 
 import com.orca.com.config.UdpProperties;
+import com.orca.com.protocol.FragmentHeader;
 import com.orca.com.protocol.UdpRequest;
+import com.orca.com.protocol.TerrainRequest;
 import com.orca.com.protocol.UdpResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,10 +84,17 @@ class UdpServiceIntegrationTest {
                         UdpResponse response = createTestResponse();
                         byte[] responseData = response.encode();
                         
+                        // 包装在分片头中 (模拟单分片)
+                        FragmentHeader header = new FragmentHeader(response.getRequestId(), 1, 0, responseData.length);
+                        byte[] headerBytes = header.encode();
+                        byte[] packetData = new byte[headerBytes.length + responseData.length];
+                        System.arraycopy(headerBytes, 0, packetData, 0, headerBytes.length);
+                        System.arraycopy(responseData, 0, packetData, headerBytes.length, responseData.length);
+                        
                         // 发送响应到监听端口
                         InetAddress clientAddress = InetAddress.getByName("127.0.0.1");
                         DatagramPacket responsePacket = new DatagramPacket(
-                            responseData, responseData.length,
+                            packetData, packetData.length,
                             clientAddress, 19213);
                         mockServerSocket.send(responsePacket);
                     } catch (SocketTimeoutException e) {
@@ -144,7 +153,7 @@ class UdpServiceIntegrationTest {
     @Test
     void testSendRequestAndReceiveResponse() throws Exception {
         // 创建测试请求
-        UdpRequest request = new UdpRequest();
+        TerrainRequest request = new TerrainRequest();
         request.setRequestId(12345L);
         request.setResponseTerminal(0);
         request.setALongitude(116.397128);

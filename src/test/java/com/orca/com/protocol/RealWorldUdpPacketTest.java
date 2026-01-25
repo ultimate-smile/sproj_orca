@@ -14,7 +14,7 @@ class RealWorldUdpPacketTest {
      */
     @Test
     void testRealWorldRequest() {
-        UdpRequest request = new UdpRequest();
+        TerrainRequest request = new TerrainRequest();
         request.setRequestId(20250125001L);
         request.setResponseTerminal(0);
         request.setALongitude(116.397128);  // 天安门经度
@@ -25,10 +25,10 @@ class RealWorldUdpPacketTest {
         
         // 编码
         byte[] encoded = request.encode();
-        assertEquals(44, encoded.length); // 请求固定44字节
+        assertEquals(TerrainRequest.TOTAL_SIZE, encoded.length); // 46字节 (44 + 2字节Type)
         
         // 解码验证
-        UdpRequest decoded = UdpRequest.decode(encoded);
+        TerrainRequest decoded = TerrainRequest.decode(encoded);
         assertEquals(20250125001L, decoded.getRequestId());
         assertEquals(116.397128, decoded.getALongitude(), 0.000001);
         assertEquals(39.909604, decoded.getALatitude(), 0.000001);

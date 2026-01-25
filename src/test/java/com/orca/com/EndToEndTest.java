@@ -99,7 +99,7 @@ class EndToEndTest {
                                     requestData, 0, header.getCurrentSize());
                                 
                                 // 解析请求
-                                UdpRequest request = UdpRequest.decode(requestData);
+                                UdpRequest request = RequestFactory.decode(requestData);
                                 
                                 // 生成响应
                                 UdpResponse response = createRealisticResponse(request);
@@ -138,16 +138,25 @@ class EndToEndTest {
         UdpResponse response = new UdpResponse();
         response.setRequestId(request.getRequestId());
         response.setCount(3);
+
+        double aLongitude = 0;
+        double bLongitude = 0;
+        
+        if (request instanceof TerrainRequest) {
+            TerrainRequest terrainRequest = (TerrainRequest) request;
+            aLongitude = terrainRequest.getALongitude();
+            bLongitude = terrainRequest.getBLongitude();
+        }
         
         // 生成3个地形点数据
         for (int i = 0; i < 3; i++) {
             UdpResponse.ResponseItem item = new UdpResponse.ResponseItem();
             // 在A和B之间插值
             double ratio = (i + 1) / 4.0;
-            item.setALongitude(request.getALongitude() + 
-                (request.getBLongitude() - request.getALongitude()) * ratio);
-            item.setBLongitude(request.getBLongitude() - 
-                (request.getBLongitude() - request.getALongitude()) * ratio);
+            item.setALongitude(aLongitude + 
+                (bLongitude - aLongitude) * ratio);
+            item.setBLongitude(bLongitude - 
+                (bLongitude - aLongitude) * ratio);
             item.setType(i + 1);
             item.setDensity(0.8f + i * 0.05f);
             item.setField6(100 + i * 50);
@@ -195,7 +204,7 @@ class EndToEndTest {
         wsRequest.setDataSource(1);
         
         // 2. 转换为UDP请求
-        UdpRequest udpRequest = new UdpRequest();
+        TerrainRequest udpRequest = new TerrainRequest();
         udpRequest.setRequestId(wsRequest.getRequestId());
         udpRequest.setResponseTerminal(wsRequest.getResponseTerminal());
         udpRequest.setALongitude(wsRequest.getALongitude());
@@ -250,7 +259,7 @@ class EndToEndTest {
     @Test
     void testMultipleRequests() throws Exception {
         for (int i = 1; i <= 5; i++) {
-            UdpRequest request = new UdpRequest();
+            TerrainRequest request = new TerrainRequest();
             request.setRequestId(10000L + i);
             request.setResponseTerminal(0);
             request.setALongitude(116.397128 + i * 0.001);

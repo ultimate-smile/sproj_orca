@@ -2,6 +2,7 @@ package com.orca.com.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orca.com.protocol.UdpRequest;
+import com.orca.com.protocol.TerrainRequest;
 import com.orca.com.protocol.UdpResponse;
 import com.orca.com.service.UdpService;
 import org.slf4j.Logger;
@@ -100,7 +101,7 @@ public class OrcaWebSocketHandler implements WebSocketHandler {
     }
     
     private UdpRequest convertToUdpRequest(WebSocketRequest wsRequest, long requestId) {
-        UdpRequest udpRequest = new UdpRequest();
+        TerrainRequest udpRequest = new TerrainRequest();
         udpRequest.setRequestId(requestId);
         udpRequest.setResponseTerminal(wsRequest.getResponseTerminal() != null ? 
             wsRequest.getResponseTerminal() : 0);

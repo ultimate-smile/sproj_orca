@@ -25,7 +25,7 @@ class EndToEndFragmentSimulationTest {
         // 1. 客户端：构造请求
         // ==========================================
         System.out.println("\n[客户端] 1. 构造请求...");
-        UdpRequest request = new UdpRequest();
+        TerrainRequest request = new TerrainRequest();
         request.setRequestId(1001L);
         request.setALongitude(116.40);
         request.setALatitude(39.90);
@@ -36,7 +36,7 @@ class EndToEndFragmentSimulationTest {
         byte[] requestData = request.encode();
         System.out.println("[客户端] 请求已编码，长度: " + requestData.length + " 字节");
         
-        // 假设请求很小，不需要分片 (44字节 < 200字节)
+        // 假设请求很小，不需要分片 (46字节 < 200字节)
         assertTrue(requestData.length < MTU, "演示目的：请求包应当较小不分片");
 
         // ==========================================
@@ -44,7 +44,7 @@ class EndToEndFragmentSimulationTest {
         // ==========================================
         System.out.println("\n[服务端] 2. 接收请求并生成大数据响应...");
         // (模拟网络传输请求...)
-        UdpRequest receivedRequest = UdpRequest.decode(requestData);
+        UdpRequest receivedRequest = RequestFactory.decode(requestData);
         assertEquals(1001L, receivedRequest.getRequestId());
 
         // 生成一个较大的响应数据，强制触发分片

@@ -48,12 +48,12 @@ class EndToEndFragmentSimulationTest {
         assertEquals(1001L, receivedRequest.getRequestId());
 
         // 生成一个较大的响应数据，强制触发分片
-        UdpResponse response = new UdpResponse();
+        TerrainResponse response = new TerrainResponse();
         response.setRequestId(receivedRequest.getRequestId());
         response.setCount(50); // 50个数据点，确保数据量足够大
 
         for (int i = 0; i < 50; i++) {
-            UdpResponse.ResponseItem item = new UdpResponse.ResponseItem();
+            TerrainResponse.ResponseItem item = new TerrainResponse.ResponseItem();
             item.setALongitude(116.40 + i * 0.0001);
             item.setBLongitude(116.41 + i * 0.0001);
             item.setType(1);
@@ -123,14 +123,17 @@ class EndToEndFragmentSimulationTest {
         assertNotNull(reassembledData, "重组失败，数据为空");
         assertEquals(responseData.length, reassembledData.length, "重组后数据长度不一致");
 
-        UdpResponse finalResponse = UdpResponse.decode(reassembledData);
+        UdpResponse finalResponse = ResponseFactory.decode(reassembledData);
         assertEquals(1001L, finalResponse.getRequestId());
-        assertEquals(50, finalResponse.getCount());
-        assertEquals(50, finalResponse.getItems().size());
+        
+        assertTrue(finalResponse instanceof TerrainResponse);
+        TerrainResponse terrainResponse = (TerrainResponse) finalResponse;
+        assertEquals(50, terrainResponse.getCount());
+        assertEquals(50, terrainResponse.getItems().size());
         
         System.out.println("[客户端] 业务数据解析成功：");
-        System.out.println("   - RequestID: " + finalResponse.getRequestId());
-        System.out.println("   - Item Count: " + finalResponse.getCount());
+        System.out.println("   - RequestID: " + terrainResponse.getRequestId());
+        System.out.println("   - Item Count: " + terrainResponse.getCount());
         
         System.out.println("\n=== 案例演示结束 ===");
         

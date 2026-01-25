@@ -5,6 +5,7 @@ import com.orca.com.protocol.FragmentHeader;
 import com.orca.com.protocol.UdpRequest;
 import com.orca.com.protocol.TerrainRequest;
 import com.orca.com.protocol.UdpResponse;
+import com.orca.com.protocol.TerrainResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -123,12 +124,12 @@ class UdpServiceIntegrationTest {
     }
     
     private UdpResponse createTestResponse() {
-        UdpResponse response = new UdpResponse();
+        TerrainResponse response = new TerrainResponse();
         response.setRequestId(12345L);
         response.setCount(2);
         
         // 第一个item
-        UdpResponse.ResponseItem item1 = new UdpResponse.ResponseItem();
+        TerrainResponse.ResponseItem item1 = new TerrainResponse.ResponseItem();
         item1.setALongitude(116.3974);
         item1.setBLongitude(116.4074);
         item1.setType(1);
@@ -138,7 +139,7 @@ class UdpServiceIntegrationTest {
         response.getItems().add(item1);
         
         // 第二个item
-        UdpResponse.ResponseItem item2 = new UdpResponse.ResponseItem();
+        TerrainResponse.ResponseItem item2 = new TerrainResponse.ResponseItem();
         item2.setALongitude(116.3984);
         item2.setBLongitude(116.4084);
         item2.setType(2);
@@ -169,11 +170,14 @@ class UdpServiceIntegrationTest {
         // 验证响应
         assertNotNull(response);
         assertEquals(12345L, response.getRequestId());
-        assertEquals(2, response.getCount());
-        assertEquals(2, response.getItems().size());
+        
+        assertTrue(response instanceof TerrainResponse);
+        TerrainResponse terrainResponse = (TerrainResponse) response;
+        assertEquals(2, terrainResponse.getCount());
+        assertEquals(2, terrainResponse.getItems().size());
         
         // 验证第一个item
-        UdpResponse.ResponseItem item1 = response.getItems().get(0);
+        TerrainResponse.ResponseItem item1 = terrainResponse.getItems().get(0);
         assertEquals(116.3974, item1.getALongitude(), 0.0001);
         assertEquals(116.4074, item1.getBLongitude(), 0.0001);
         assertEquals(1, item1.getType());
@@ -181,7 +185,7 @@ class UdpServiceIntegrationTest {
         assertEquals(100, item1.getField6());
         
         // 验证第二个item
-        UdpResponse.ResponseItem item2 = response.getItems().get(1);
+        TerrainResponse.ResponseItem item2 = terrainResponse.getItems().get(1);
         assertEquals(116.3984, item2.getALongitude(), 0.0001);
         assertEquals(116.4084, item2.getBLongitude(), 0.0001);
         assertEquals(2, item2.getType());

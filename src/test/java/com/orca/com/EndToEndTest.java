@@ -135,7 +135,7 @@ class EndToEndTest {
     
     private UdpResponse createRealisticResponse(UdpRequest request) {
         // 根据请求生成真实的响应数据
-        UdpResponse response = new UdpResponse();
+        TerrainResponse response = new TerrainResponse();
         response.setRequestId(request.getRequestId());
         response.setCount(3);
 
@@ -150,7 +150,7 @@ class EndToEndTest {
         
         // 生成3个地形点数据
         for (int i = 0; i < 3; i++) {
-            UdpResponse.ResponseItem item = new UdpResponse.ResponseItem();
+            TerrainResponse.ResponseItem item = new TerrainResponse.ResponseItem();
             // 在A和B之间插值
             double ratio = (i + 1) / 4.0;
             item.setALongitude(aLongitude + 
@@ -220,16 +220,20 @@ class EndToEndTest {
         // 4. 验证UDP响应
         assertNotNull(udpResponse);
         assertEquals(12345L, udpResponse.getRequestId());
-        assertEquals(3, udpResponse.getCount());
-        assertEquals(3, udpResponse.getItems().size());
+        
+        assertTrue(udpResponse instanceof TerrainResponse);
+        TerrainResponse terrainResponse = (TerrainResponse) udpResponse;
+        
+        assertEquals(3, terrainResponse.getCount());
+        assertEquals(3, terrainResponse.getItems().size());
         
         // 验证响应数据的语义正确性
-        UdpResponse.ResponseItem firstItem = udpResponse.getItems().get(0);
+        TerrainResponse.ResponseItem firstItem = terrainResponse.getItems().get(0);
         assertTrue(firstItem.getALongitude() >= Math.min(wsRequest.getALongitude(), wsRequest.getBLongitude()));
         assertTrue(firstItem.getALongitude() <= Math.max(wsRequest.getALongitude(), wsRequest.getBLongitude()));
         
         // 5. 转换为WebSocket响应
-        WebSocketResponse wsResponse = WebSocketResponse.fromUdpResponse(udpResponse, wsRequest.getType());
+        WebSocketResponse wsResponse = WebSocketResponse.fromUdpResponse(terrainResponse, wsRequest.getType());
         
         // 6. 验证WebSocket响应
         assertEquals(wsRequest.getType(), wsResponse.getType());
@@ -273,7 +277,8 @@ class EndToEndTest {
             
             assertNotNull(response);
             assertEquals(10000L + i, response.getRequestId());
-            assertTrue(response.getCount() > 0);
+            assertTrue(response instanceof TerrainResponse);
+            assertTrue(((TerrainResponse)response).getCount() > 0);
         }
     }
 }

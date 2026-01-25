@@ -173,13 +173,18 @@ public class UdpService {
      */
     private void processCompleteResponse(byte[] data) {
         try {
-            UdpResponse response = UdpResponse.decode(data);
+            UdpResponse response = ResponseFactory.decode(data);
             CompletableFuture<UdpResponse> future = pendingRequests.remove(response.getRequestId());
             
             if (future != null) {
                 future.complete(response);
-                logger.debug("Received UDP response: requestId={}, count={}", 
-                    response.getRequestId(), response.getCount());
+                if (response instanceof TerrainResponse) {
+                    logger.debug("Received UDP response: requestId={}, count={}", 
+                        response.getRequestId(), ((TerrainResponse)response).getCount());
+                } else {
+                    logger.debug("Received UDP response: requestId={}, type={}", 
+                        response.getRequestId(), response.getType());
+                }
             } else {
                 logger.warn("No pending request found for response: requestId={}", 
                     response.getRequestId());

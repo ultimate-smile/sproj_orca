@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orca.com.protocol.UdpRequest;
 import com.orca.com.protocol.TerrainRequest;
 import com.orca.com.protocol.UdpResponse;
+import com.orca.com.protocol.TerrainResponse;
 import com.orca.com.service.UdpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,12 +66,17 @@ public class OrcaWebSocketHandler implements WebSocketHandler {
             // 发送UDP请求并等待响应
             return Mono.fromFuture(udpService.sendRequest(udpRequest))
                 .map(udpResponse -> {
-                    WebSocketResponse wsResponse = WebSocketResponse.fromUdpResponse(
-                        udpResponse, request.getType());
-                    try {
-                        return objectMapper.writeValueAsString(wsResponse);
-                    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-                        throw new RuntimeException(e);
+                    if (udpResponse instanceof TerrainResponse) {
+                        WebSocketResponse wsResponse = WebSocketResponse.fromUdpResponse(
+                            (TerrainResponse) udpResponse, request.getType());
+                        try {
+                            return objectMapper.writeValueAsString(wsResponse);
+                        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        // 处理其他类型的响应或抛出错误
+                        return createErrorResponse(request.getType(), requestId, "Unknown response type");
                     }
                 })
                 .onErrorResume(e -> {

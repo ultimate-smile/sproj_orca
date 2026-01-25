@@ -2,6 +2,7 @@ package com.orca.com.websocket;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.orca.com.protocol.UdpResponse;
+import com.orca.com.protocol.TerrainResponse;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,7 +100,7 @@ public class WebSocketResponse {
     public WebSocketResponse() {
     }
     
-    public static WebSocketResponse fromUdpResponse(UdpResponse udpResponse, int requestType) {
+    public static WebSocketResponse fromUdpResponse(TerrainResponse udpResponse, int requestType) {
         WebSocketResponse response = new WebSocketResponse();
         response.type = requestType;
         response.requestId = udpResponse.getRequestId();
@@ -107,7 +108,7 @@ public class WebSocketResponse {
         response.count = udpResponse.getCount();
         response.items = new ArrayList<>();
         
-        for (UdpResponse.ResponseItem item : udpResponse.getItems()) {
+        for (TerrainResponse.ResponseItem item : udpResponse.getItems()) {
             ResponseItem wsItem = new ResponseItem();
             wsItem.aLongitude = item.getALongitude();
             wsItem.bLongitude = item.getBLongitude();

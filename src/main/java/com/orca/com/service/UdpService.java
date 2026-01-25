@@ -153,6 +153,11 @@ public class UdpService {
             FragmentHeader header = FragmentHeader.decode(headerBytes);
             
             // 提取分片数据
+            if (FragmentHeader.HEADER_SIZE + header.getCurrentSize() > data.length) {
+                logger.error("Invalid packet size: header says {} bytes of data, but packet only has {} bytes remaining",
+                    header.getCurrentSize(), data.length - FragmentHeader.HEADER_SIZE);
+                return;
+            }
             byte[] fragmentData = new byte[header.getCurrentSize()];
             System.arraycopy(data, FragmentHeader.HEADER_SIZE, fragmentData, 0, header.getCurrentSize());
             

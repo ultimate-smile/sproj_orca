@@ -139,29 +139,35 @@ public class UdpService {
      */
     private void processReceivedPacket(DatagramPacket packet) {
         try {
+            // [1] 申请新内存：创建一个与实际接收数据长度一致的字节数组
             byte[] data = new byte[packet.getLength()];
+            // [2] 数据快照：将 DatagramPacket 中的数据（可能来自复用的缓存池）复制到新数组 data 中
+            // 这一步非常关键，因为 UDP 接收循环通常复用同一个 byte[] buffer，如果不复制，
+            // 后续数据到达会覆盖当前处理的数据（线程安全问题）
             System.arraycopy(packet.getData(), packet.getOffset(), data, 0, packet.getLength());
-            
+            // [3] 基础校验：如果总长度连分片头（15字节）都不到，直接丢弃
             if (data.length < FragmentHeader.HEADER_SIZE) {
                 logger.warn("Received packet too short: {}", data.length);
                 return;
             }
-            
             // 解析分片头
+            // [4] 提取头部（低效点）：又申请了 15 字节的新数组，再次发生内存复制
             byte[] headerBytes = new byte[FragmentHeader.HEADER_SIZE];
             System.arraycopy(data, 0, headerBytes, 0, FragmentHeader.HEADER_SIZE);
+            // [5] 解码头部：反序列化为 Java 对象
             FragmentHeader header = FragmentHeader.decode(headerBytes);
-            
-            // 提取分片数据
+
+            // [6] 安全校验：确保报文剩余长度足够 header 声明的 payload 长度（防止越界异常）
             if (FragmentHeader.HEADER_SIZE + header.getCurrentSize() > data.length) {
                 logger.error("Invalid packet size: header says {} bytes of data, but packet only has {} bytes remaining",
                     header.getCurrentSize(), data.length - FragmentHeader.HEADER_SIZE);
                 return;
             }
+            // [7] 提取载荷（低效点）：又申请了 payload 长度的新数组，第三次发生内存复制
             byte[] fragmentData = new byte[header.getCurrentSize()];
             System.arraycopy(data, FragmentHeader.HEADER_SIZE, fragmentData, 0, header.getCurrentSize());
             
-            // 重组
+            //[8] 重组逻辑：将头和数据交给重组器
             byte[] completeData = reassembler.addFragment(header, fragmentData);
             
             if (completeData != null) {

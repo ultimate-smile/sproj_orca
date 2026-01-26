@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  orca-udp-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Important: Ensure the build targets AMD64 for Windows/Intel compatibility
+      # even when building on Apple Silicon (M4)
+      platforms:
+        - "linux/amd64"
+    image: orca-udp:latest
+    container_name: orca-udp-container
+    ports:
+      # TCP Port for WebSocket/HTTP
+      - "8080:8080"
+      # UDP Ports (Explicitly marked as /udp)
+      - "19210:19210/udp"
+      - "19211:19211/udp"
+    environment:
+      # Allow overriding properties via environment variables
+      - ORCA_UDP_LISTEN_HOST=0.0.0.0
+      - ORCA_UDP_SEND_HOST=host.docker.internal # Example: sending back to host
+    restart: unless-stopped
+    # Emulate AMD64 architecture if running locally on Mac M4 for testing
+    platform: linux/amd64

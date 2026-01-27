@@ -145,6 +145,9 @@ public class UdpService {
             // 这一步非常关键，因为 UDP 接收循环通常复用同一个 byte[] buffer，如果不复制，
             // 后续数据到达会覆盖当前处理的数据（线程安全问题）
             System.arraycopy(packet.getData(), packet.getOffset(), data, 0, packet.getLength());
+            
+            logger.info("Received data (first 16 bytes): {}", java.util.HexFormat.of().formatHex(data, 0, Math.min(data.length, 16)));
+            
             // [3] 基础校验：如果总长度连分片头（15字节）都不到，直接丢弃
             if (data.length < FragmentHeader.HEADER_SIZE) {
                 logger.warn("Received packet too short: {}", data.length);

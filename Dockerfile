@@ -1,23 +1,8 @@
-# Multi-stage build
-# 1. Build Stage
-FROM maven:3.9.6-eclipse-temurin-17 AS builder
+FROM eclipse-temurin:17-jdk
+# 在docker容器中自建容器卷,用于数据保存和持久化工作
 WORKDIR /app
 
-# Copy configuration files
-COPY pom.xml .
-# Download dependencies (cache layer)
-RUN mvn dependency:go-offline -B
-
-# Copy source code and build
-COPY src ./src
-RUN mvn clean package -DskipTests
-
-# 2. Runtime Stage
-FROM eclipse-temurin:17-jre
-WORKDIR /app
-
-# Copy the jar from the builder stage
-COPY --from=builder /app/target/*.jar app.jar
+ADD ./target/*.jar app.jar
 
 # Expose ports: 8080 (Web/WS), 19210 (UDP Listen), 19211 (UDP Send target)
 EXPOSE 8080

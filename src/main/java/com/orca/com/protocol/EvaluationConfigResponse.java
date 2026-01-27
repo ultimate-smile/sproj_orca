@@ -154,8 +154,17 @@ public class EvaluationConfigResponse extends UdpResponse {
 
     // 辅助方法：读取整数列表
     private static List<Integer> readIntegerList(java.nio.ByteBuffer buffer) {
+        if (buffer.remaining() < 2) {
+            return new java.util.ArrayList<>();
+        }
         int count = ByteOrderUtils.readUint16(buffer);
         java.util.ArrayList<Integer> list = new java.util.ArrayList<>(count);
+        // 如果 count 大于剩余可能的整数个数，则只读取剩余个数
+        int maxPossible = buffer.remaining() / 4;
+        if (count > maxPossible) {
+            count = maxPossible;
+        }
+        
         for (int i = 0; i < count; i++) {
             list.add(buffer.getInt());
         }

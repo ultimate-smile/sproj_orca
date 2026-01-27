@@ -2,6 +2,7 @@ package com.orca.com.protocol;
 
 import org.junit.jupiter.api.Test;
 import java.util.HexFormat;
+import java.util.Arrays;
 
 /**
  * 工具类：生成用于 NetAssist 等工具测试的 Hex 字符串
@@ -12,6 +13,11 @@ public class PacketGenerator {
     void generateHexStrings() {
         System.out.println("====== NetAssist 测试报文生成 ======");
         
+        generateTerrainPackets();
+        generateEvaluationConfigPackets();
+    }
+    
+    private void generateTerrainPackets() {
         // 1. 生成一个标准的 UDP Request (TerrainRequest)
         // 假设 RequestId = 1001 (0x03E9)
         TerrainRequest request = new TerrainRequest();
@@ -24,7 +30,7 @@ public class PacketGenerator {
         request.setDataSource(1);
         
         byte[] reqBytes = request.encode();
-        System.out.println("\n[客户端请求报文] (RequestID = 1001)");
+        System.out.println("\n[Terrain客户端请求报文] (RequestID = 1001)");
         System.out.println("说明：这是Java客户端发出的报文，NetAssist(19211) 应该收到此前缀开头的数据");
         printHex(reqBytes);
         
@@ -58,11 +64,6 @@ public class PacketGenerator {
         byte[] respBytes = response.encode();
         
         // 3. 封装分片头 (模拟单分片情况)
-        // 即使不分片，通常协议也可能要求统一加上分片头，或者视具体实现而定
-        // 根据 EndToEndTest 中的逻辑：
-        // if (receivedData.length >= FragmentHeader.HEADER_SIZE) ... FragmentHeader.decode ...
-        // 所以服务端返回时，最好加上分片头。
-        
         FragmentHeader header = new FragmentHeader(99999L, 1, 0, respBytes.length);
         byte[] headerBytes = header.encode();
         
@@ -70,8 +71,43 @@ public class PacketGenerator {
         System.arraycopy(headerBytes, 0, fullPacket, 0, headerBytes.length);
         System.arraycopy(respBytes, 0, fullPacket, headerBytes.length, respBytes.length);
         
-        System.out.println("\n[服务端响应报文] (RequestID = 1001, 含分片头)");
+        System.out.println("\n[Terrain服务端响应报文] (RequestID = 1001, 含分片头)");
         System.out.println("说明：这是你应该填入 NetAssist 发送区(发送给19210) 的内容");
+        printHex(fullPacket);
+    }
+    
+    private void generateEvaluationConfigPackets() {
+        // 1. 生成 EvaluationConfigRequest
+        // RequestId = 2002 (0x07D2)
+        EvaluationConfigRequest request = new EvaluationConfigRequest();
+        request.setRequestId(2002L);
+        
+        byte[] reqBytes = request.encode();
+        System.out.println("\n[EvaluationConfig客户端请求报文] (RequestID = 2002)");
+        printHex(reqBytes);
+        
+        // 2. 生成 EvaluationConfigResponse
+        EvaluationConfigResponse response = new EvaluationConfigResponse();
+        response.setRequestId(2002L);
+        response.setTestBackground("Test Background Info");
+        response.setEvaluationPurpose("Purpose of Evaluation");
+        response.setEvalTaskId("TASK-2026-001");
+        response.setTestPlatforms(Arrays.asList(1, 2, 5));
+        response.setSonarTestLocation(Arrays.asList(100, 200));
+        response.setSonarTestTasks(Arrays.asList(10, 20, 30));
+        response.setTestMethod(1);
+        
+        byte[] respBytes = response.encode();
+        
+        // 3. 封装分片头
+        FragmentHeader header = new FragmentHeader(88888L, 1, 0, respBytes.length);
+        byte[] headerBytes = header.encode();
+        
+        byte[] fullPacket = new byte[headerBytes.length + respBytes.length];
+        System.arraycopy(headerBytes, 0, fullPacket, 0, headerBytes.length);
+        System.arraycopy(respBytes, 0, fullPacket, headerBytes.length, respBytes.length);
+        
+        System.out.println("\n[EvaluationConfig服务端响应报文] (RequestID = 2002, 含分片头)");
         printHex(fullPacket);
     }
     

@@ -19,7 +19,7 @@ public class WebSocketConfig {
     @Bean
     public HandlerMapping webSocketHandlerMapping(OrcaWebSocketHandler webSocketHandler) {
         Map<String, Object> map = new HashMap<>();
-        map.put("/ws", webSocketHandler);
+        map.put("/orca/ws", webSocketHandler);
         
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
         mapping.setUrlMap(map);

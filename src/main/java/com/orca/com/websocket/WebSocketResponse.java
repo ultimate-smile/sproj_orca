@@ -21,33 +21,9 @@ public class WebSocketResponse {
     
     @JsonProperty("error")
     private String error;
-    
-    @JsonProperty("count")
-    private Long count;
-    
-    @JsonProperty("items")
-    private List<ResponseItem> items;
 
-    @JsonProperty("testBackground")
-    private String testBackground;
-
-    @JsonProperty("evaluationPurpose")
-    private String evaluationPurpose;
-
-    @JsonProperty("evalTaskId")
-    private String evalTaskId;
-
-    @JsonProperty("testPlatforms")
-    private List<Integer> testPlatforms;
-
-    @JsonProperty("sonarTestLocation")
-    private List<Integer> sonarTestLocation;
-
-    @JsonProperty("sonarTestTasks")
-    private List<Integer> sonarTestTasks;
-
-    @JsonProperty("testMethod")
-    private Integer testMethod;
+    @JsonProperty("data")
+    private Object data;
     
     public static class ResponseItem {
         @JsonProperty("aLongitude")
@@ -117,6 +93,109 @@ public class WebSocketResponse {
             this.terrainData = terrainData;
         }
     }
+
+    public static class TerrainData {
+        @JsonProperty("count")
+        private Long count;
+        
+        @JsonProperty("items")
+        private List<ResponseItem> items;
+
+        public Long getCount() {
+            return count;
+        }
+
+        public void setCount(Long count) {
+            this.count = count;
+        }
+
+        public List<ResponseItem> getItems() {
+            return items;
+        }
+
+        public void setItems(List<ResponseItem> items) {
+            this.items = items;
+        }
+    }
+
+    public static class EvaluationConfigData {
+        @JsonProperty("testBackground")
+        private String testBackground;
+
+        @JsonProperty("evaluationPurpose")
+        private String evaluationPurpose;
+
+        @JsonProperty("evalTaskId")
+        private String evalTaskId;
+
+        @JsonProperty("testPlatforms")
+        private List<Integer> testPlatforms;
+
+        @JsonProperty("sonarTestLocation")
+        private List<Integer> sonarTestLocation;
+
+        @JsonProperty("sonarTestTasks")
+        private List<Integer> sonarTestTasks;
+
+        @JsonProperty("testMethod")
+        private Integer testMethod;
+
+        public String getTestBackground() {
+            return testBackground;
+        }
+
+        public void setTestBackground(String testBackground) {
+            this.testBackground = testBackground;
+        }
+
+        public String getEvaluationPurpose() {
+            return evaluationPurpose;
+        }
+
+        public void setEvaluationPurpose(String evaluationPurpose) {
+            this.evaluationPurpose = evaluationPurpose;
+        }
+
+        public String getEvalTaskId() {
+            return evalTaskId;
+        }
+
+        public void setEvalTaskId(String evalTaskId) {
+            this.evalTaskId = evalTaskId;
+        }
+
+        public List<Integer> getTestPlatforms() {
+            return testPlatforms;
+        }
+
+        public void setTestPlatforms(List<Integer> testPlatforms) {
+            this.testPlatforms = testPlatforms;
+        }
+
+        public List<Integer> getSonarTestLocation() {
+            return sonarTestLocation;
+        }
+
+        public void setSonarTestLocation(List<Integer> sonarTestLocation) {
+            this.sonarTestLocation = sonarTestLocation;
+        }
+
+        public List<Integer> getSonarTestTasks() {
+            return sonarTestTasks;
+        }
+
+        public void setSonarTestTasks(List<Integer> sonarTestTasks) {
+            this.sonarTestTasks = sonarTestTasks;
+        }
+
+        public Integer getTestMethod() {
+            return testMethod;
+        }
+
+        public void setTestMethod(Integer testMethod) {
+            this.testMethod = testMethod;
+        }
+    }
     
     public WebSocketResponse() {
     }
@@ -126,8 +205,10 @@ public class WebSocketResponse {
         response.type = requestType;
         response.requestId = udpResponse.getRequestId();
         response.success = true;
-        response.count = udpResponse.getCount();
-        response.items = new ArrayList<>();
+
+        TerrainData terrainData = new TerrainData();
+        terrainData.count = udpResponse.getCount();
+        terrainData.items = new ArrayList<>();
         
         for (TerrainResponse.ResponseItem item : udpResponse.getItems()) {
             ResponseItem wsItem = new ResponseItem();
@@ -139,9 +220,10 @@ public class WebSocketResponse {
             if (item.getTerrainData() != null) {
                 wsItem.terrainData = java.util.Base64.getEncoder().encodeToString(item.getTerrainData());
             }
-            response.items.add(wsItem);
+            terrainData.items.add(wsItem);
         }
         
+        response.setData(terrainData);
         return response;
     }
 
@@ -151,14 +233,16 @@ public class WebSocketResponse {
         response.requestId = udpResponse.getRequestId();
         response.success = true;
         
-        response.testBackground = udpResponse.getTestBackground();
-        response.evaluationPurpose = udpResponse.getEvaluationPurpose();
-        response.evalTaskId = udpResponse.getEvalTaskId();
-        response.testPlatforms = udpResponse.getTestPlatforms();
-        response.sonarTestLocation = udpResponse.getSonarTestLocation();
-        response.sonarTestTasks = udpResponse.getSonarTestTasks();
-        response.testMethod = udpResponse.getTestMethod();
+        EvaluationConfigData configData = new EvaluationConfigData();
+        configData.testBackground = udpResponse.getTestBackground();
+        configData.evaluationPurpose = udpResponse.getEvaluationPurpose();
+        configData.evalTaskId = udpResponse.getEvalTaskId();
+        configData.testPlatforms = udpResponse.getTestPlatforms();
+        configData.sonarTestLocation = udpResponse.getSonarTestLocation();
+        configData.sonarTestTasks = udpResponse.getSonarTestTasks();
+        configData.testMethod = udpResponse.getTestMethod();
         
+        response.setData(configData);
         return response;
     }
     
@@ -203,76 +287,12 @@ public class WebSocketResponse {
     public void setError(String error) {
         this.error = error;
     }
-    
-    public Long getCount() {
-        return count;
-    }
-    
-    public void setCount(Long count) {
-        this.count = count;
-    }
-    
-    public List<ResponseItem> getItems() {
-        return items;
-    }
-    
-    public void setItems(List<ResponseItem> items) {
-        this.items = items;
+
+    public Object getData() {
+        return data;
     }
 
-    public String getTestBackground() {
-        return testBackground;
-    }
-
-    public void setTestBackground(String testBackground) {
-        this.testBackground = testBackground;
-    }
-
-    public String getEvaluationPurpose() {
-        return evaluationPurpose;
-    }
-
-    public void setEvaluationPurpose(String evaluationPurpose) {
-        this.evaluationPurpose = evaluationPurpose;
-    }
-
-    public String getEvalTaskId() {
-        return evalTaskId;
-    }
-
-    public void setEvalTaskId(String evalTaskId) {
-        this.evalTaskId = evalTaskId;
-    }
-
-    public List<Integer> getTestPlatforms() {
-        return testPlatforms;
-    }
-
-    public void setTestPlatforms(List<Integer> testPlatforms) {
-        this.testPlatforms = testPlatforms;
-    }
-
-    public List<Integer> getSonarTestLocation() {
-        return sonarTestLocation;
-    }
-
-    public void setSonarTestLocation(List<Integer> sonarTestLocation) {
-        this.sonarTestLocation = sonarTestLocation;
-    }
-
-    public List<Integer> getSonarTestTasks() {
-        return sonarTestTasks;
-    }
-
-    public void setSonarTestTasks(List<Integer> sonarTestTasks) {
-        this.sonarTestTasks = sonarTestTasks;
-    }
-
-    public Integer getTestMethod() {
-        return testMethod;
-    }
-
-    public void setTestMethod(Integer testMethod) {
-        this.testMethod = testMethod;
+    public void setData(Object data) {
+        this.data = data;
     }
 }

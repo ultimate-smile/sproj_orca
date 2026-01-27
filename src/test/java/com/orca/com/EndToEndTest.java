@@ -239,8 +239,9 @@ class EndToEndTest {
         assertEquals(wsRequest.getType(), wsResponse.getType());
         assertEquals(wsRequest.getRequestId(), wsResponse.getRequestId());
         assertTrue(wsResponse.isSuccess());
-        assertEquals(3, wsResponse.getCount());
-        assertEquals(3, wsResponse.getItems().size());
+        WebSocketResponse.TerrainData terrainData = (WebSocketResponse.TerrainData) wsResponse.getData();
+        assertEquals(3, terrainData.getCount());
+        assertEquals(3, terrainData.getItems().size());
         
         // 7. 验证JSON序列化
         String json = objectMapper.writeValueAsString(wsResponse);
@@ -249,7 +250,7 @@ class EndToEndTest {
         assertTrue(json.contains("\"count\":3"));
         
         // 8. 验证数据语义
-        WebSocketResponse.ResponseItem wsItem1 = wsResponse.getItems().get(0);
+        WebSocketResponse.ResponseItem wsItem1 = terrainData.getItems().get(0);
         assertEquals(firstItem.getALongitude(), wsItem1.getALongitude(), 0.0001);
         assertEquals(firstItem.getBLongitude(), wsItem1.getBLongitude(), 0.0001);
         assertEquals(firstItem.getType(), wsItem1.getType());

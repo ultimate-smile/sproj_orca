@@ -69,7 +69,7 @@ public class OrcaWebSocketHandler implements WebSocketHandler {
             return Mono.fromFuture(udpService.sendRequest(udpRequest))
                 .map(udpResponse -> {
                     if (udpResponse instanceof TerrainResponse) {
-                        WebSocketResponse wsResponse = WebSocketResponse.fromUdpResponse(
+                        WebSocketResponse<WebSocketResponse.TerrainData> wsResponse = WebSocketResponse.fromUdpResponse(
                             (TerrainResponse) udpResponse, request.getType());
                         try {
                             return objectMapper.writeValueAsString(wsResponse);
@@ -77,7 +77,7 @@ public class OrcaWebSocketHandler implements WebSocketHandler {
                             throw new RuntimeException(e);
                         }
                     } else if (udpResponse instanceof EvaluationConfigResponse) {
-                        WebSocketResponse wsResponse = WebSocketResponse.fromEvaluationConfigResponse(
+                        WebSocketResponse<WebSocketResponse.EvaluationConfigData> wsResponse = WebSocketResponse.fromEvaluationConfigResponse(
                             (EvaluationConfigResponse) udpResponse, request.getType());
                         try {
                             return objectMapper.writeValueAsString(wsResponse);
@@ -91,7 +91,7 @@ public class OrcaWebSocketHandler implements WebSocketHandler {
                 })
                 .onErrorResume(e -> {
                     logger.error("Error processing UDP request", e);
-                    WebSocketResponse errorResponse = WebSocketResponse.error(
+                    WebSocketResponse<Void> errorResponse = WebSocketResponse.error(
                         request.getType(), requestId, e.getMessage());
                     try {
                         return Mono.just(objectMapper.writeValueAsString(errorResponse));
@@ -102,7 +102,7 @@ public class OrcaWebSocketHandler implements WebSocketHandler {
                 .timeout(java.time.Duration.ofSeconds(30))
                 .onErrorResume(e -> {
                     logger.error("Request timeout", e);
-                    WebSocketResponse errorResponse = WebSocketResponse.error(
+                    WebSocketResponse<Void> errorResponse = WebSocketResponse.error(
                         request.getType(), requestId, "Request timeout");
                     try {
                         return Mono.just(objectMapper.writeValueAsString(errorResponse));
@@ -144,7 +144,7 @@ public class OrcaWebSocketHandler implements WebSocketHandler {
     
     private String createErrorResponse(int type, long requestId, String error) {
         try {
-            WebSocketResponse response = WebSocketResponse.error(type, requestId, error);
+            WebSocketResponse<Void> response = WebSocketResponse.error(type, requestId, error);
             return objectMapper.writeValueAsString(response);
         } catch (Exception e) {
             return "{\"success\":false,\"error\":\"Failed to create error response\"}";

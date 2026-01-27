@@ -233,13 +233,13 @@ class EndToEndTest {
         assertTrue(firstItem.getALongitude() <= Math.max(wsRequest.getALongitude(), wsRequest.getBLongitude()));
         
         // 5. 转换为WebSocket响应
-        WebSocketResponse wsResponse = WebSocketResponse.fromUdpResponse(terrainResponse, wsRequest.getType());
+        WebSocketResponse<WebSocketResponse.TerrainData> wsResponse = WebSocketResponse.fromUdpResponse(terrainResponse, wsRequest.getType());
         
         // 6. 验证WebSocket响应
         assertEquals(wsRequest.getType(), wsResponse.getType());
         assertEquals(wsRequest.getRequestId(), wsResponse.getRequestId());
         assertTrue(wsResponse.isSuccess());
-        WebSocketResponse.TerrainData terrainData = (WebSocketResponse.TerrainData) wsResponse.getData();
+        WebSocketResponse.TerrainData terrainData = wsResponse.getData();
         assertEquals(3, terrainData.getCount());
         assertEquals(3, terrainData.getItems().size());
         

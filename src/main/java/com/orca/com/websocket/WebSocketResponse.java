@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * WebSocket响应格式
  */
-public class WebSocketResponse {
+public class WebSocketResponse<T> {
     @JsonProperty("type")
     private int type;
     
@@ -23,7 +23,7 @@ public class WebSocketResponse {
     private String error;
 
     @JsonProperty("data")
-    private Object data;
+    private T data;
     
     public static class ResponseItem {
         @JsonProperty("aLongitude")
@@ -200,8 +200,8 @@ public class WebSocketResponse {
     public WebSocketResponse() {
     }
     
-    public static WebSocketResponse fromUdpResponse(TerrainResponse udpResponse, int requestType) {
-        WebSocketResponse response = new WebSocketResponse();
+    public static WebSocketResponse<TerrainData> fromUdpResponse(TerrainResponse udpResponse, int requestType) {
+        WebSocketResponse<TerrainData> response = new WebSocketResponse<>();
         response.type = requestType;
         response.requestId = udpResponse.getRequestId();
         response.success = true;
@@ -227,8 +227,8 @@ public class WebSocketResponse {
         return response;
     }
 
-    public static WebSocketResponse fromEvaluationConfigResponse(com.orca.com.protocol.EvaluationConfigResponse udpResponse, int requestType) {
-        WebSocketResponse response = new WebSocketResponse();
+    public static WebSocketResponse<EvaluationConfigData> fromEvaluationConfigResponse(com.orca.com.protocol.EvaluationConfigResponse udpResponse, int requestType) {
+        WebSocketResponse<EvaluationConfigData> response = new WebSocketResponse<>();
         response.type = requestType;
         response.requestId = udpResponse.getRequestId();
         response.success = true;
@@ -246,8 +246,8 @@ public class WebSocketResponse {
         return response;
     }
     
-    public static WebSocketResponse error(int requestType, long requestId, String error) {
-        WebSocketResponse response = new WebSocketResponse();
+    public static WebSocketResponse<Void> error(int requestType, long requestId, String error) {
+        WebSocketResponse<Void> response = new WebSocketResponse<>();
         response.type = requestType;
         response.requestId = requestId;
         response.success = false;
@@ -288,11 +288,11 @@ public class WebSocketResponse {
         this.error = error;
     }
 
-    public Object getData() {
+    public T getData() {
         return data;
     }
 
-    public void setData(Object data) {
+    public void setData(T data) {
         this.data = data;
     }
 }

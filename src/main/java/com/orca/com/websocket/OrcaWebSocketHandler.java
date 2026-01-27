@@ -3,8 +3,10 @@ package com.orca.com.websocket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orca.com.protocol.UdpRequest;
 import com.orca.com.protocol.TerrainRequest;
+import com.orca.com.protocol.EvaluationConfigRequest;
 import com.orca.com.protocol.UdpResponse;
 import com.orca.com.protocol.TerrainResponse;
+import com.orca.com.protocol.EvaluationConfigResponse;
 import com.orca.com.service.UdpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +76,14 @@ public class OrcaWebSocketHandler implements WebSocketHandler {
                         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
                             throw new RuntimeException(e);
                         }
+                    } else if (udpResponse instanceof EvaluationConfigResponse) {
+                        WebSocketResponse wsResponse = WebSocketResponse.fromEvaluationConfigResponse(
+                            (EvaluationConfigResponse) udpResponse, request.getType());
+                        try {
+                            return objectMapper.writeValueAsString(wsResponse);
+                        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
                     } else {
                         // 处理其他类型的响应或抛出错误
                         return createErrorResponse(request.getType(), requestId, "Unknown response type");
@@ -107,6 +117,14 @@ public class OrcaWebSocketHandler implements WebSocketHandler {
     }
     
     private UdpRequest convertToUdpRequest(WebSocketRequest wsRequest, long requestId) {
+        if (wsRequest.getType() == EvaluationConfigRequest.TYPE) {
+            EvaluationConfigRequest udpRequest = new EvaluationConfigRequest();
+            udpRequest.setRequestId(requestId);
+            udpRequest.setResponseTerminal(wsRequest.getResponseTerminal() != null ? 
+                wsRequest.getResponseTerminal() : 0);
+            return udpRequest;
+        }
+
         TerrainRequest udpRequest = new TerrainRequest();
         udpRequest.setRequestId(requestId);
         udpRequest.setResponseTerminal(wsRequest.getResponseTerminal() != null ? 

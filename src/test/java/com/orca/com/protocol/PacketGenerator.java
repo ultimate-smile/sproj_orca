@@ -82,6 +82,7 @@ public class PacketGenerator {
         // RequestId = 2002 (0x07D2)
         EvaluationConfigRequest request = new EvaluationConfigRequest();
         request.setRequestId(2002L);
+        request.setResponseTerminal(100);
 
         byte[] reqBytes = request.encode();
         System.out.println("\n[EvaluationConfig客户端请求报文] (RequestID = 2002)");

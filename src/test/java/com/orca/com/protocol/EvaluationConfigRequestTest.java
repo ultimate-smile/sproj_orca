@@ -12,6 +12,7 @@ class EvaluationConfigRequestTest {
     void testEncodeDecode() {
         EvaluationConfigRequest request = new EvaluationConfigRequest();
         request.setRequestId(1234567890123456789L);
+        request.setResponseTerminal(123);
         
         // 编码
         byte[] encoded = request.encode();
@@ -27,18 +28,22 @@ class EvaluationConfigRequestTest {
         // 验证
         assertEquals(request.getRequestId(), decoded.getRequestId());
         assertEquals(EvaluationConfigRequest.TYPE, decoded.getType());
+        assertEquals(123, decoded.getResponseTerminal());
     }
     
     @Test
     void testRequestFactoryDecode() {
         EvaluationConfigRequest request = new EvaluationConfigRequest();
         request.setRequestId(999L);
+        request.setResponseTerminal(456);
         
         byte[] encoded = request.encode();
         
         // 使用工厂解码
         UdpRequest decoded = RequestFactory.decode(encoded);
         assertTrue(decoded instanceof EvaluationConfigRequest);
-        assertEquals(999L, decoded.getRequestId());
+        EvaluationConfigRequest evalRequest = (EvaluationConfigRequest) decoded;
+        assertEquals(999L, evalRequest.getRequestId());
+        assertEquals(456, evalRequest.getResponseTerminal());
     }
 }

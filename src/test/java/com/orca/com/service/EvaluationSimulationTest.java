@@ -63,6 +63,7 @@ class EvaluationSimulationTest {
         long requestId = 2002L;
         EvaluationConfigRequest request = new EvaluationConfigRequest();
         request.setRequestId(requestId);
+        request.setResponseTerminal(2);
         
         CompletableFuture<UdpResponse> future = udpService.sendRequest(request);
         

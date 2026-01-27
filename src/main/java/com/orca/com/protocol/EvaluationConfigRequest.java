@@ -4,13 +4,15 @@ import java.nio.ByteBuffer;
 
 /**
  * 评估配置请求 (Type=2)
- * 结构: [Type(2)][RequestId(8)]
- * 总长度: 2 + 8 = 10字节
+ * 结构: [Type(2)][RequestId(8)][ResponseTerminal(2)]
+ * 总长度: 2 + 8 + 2 = 12字节
  */
 public class EvaluationConfigRequest extends UdpRequest {
     public static final int TYPE = 2;
-    public static final int PAYLOAD_SIZE = 0; // 不含Type和RequestId，无额外载荷
-    public static final int TOTAL_SIZE = 2 + 8 + PAYLOAD_SIZE; // 10字节
+    public static final int PAYLOAD_SIZE = 2; // responseTerminal (2 bytes)
+    public static final int TOTAL_SIZE = 2 + 8 + PAYLOAD_SIZE; // 12字节
+    
+    private int responseTerminal; // uint16_t
     
     public EvaluationConfigRequest() {
     }
@@ -18,6 +20,14 @@ public class EvaluationConfigRequest extends UdpRequest {
     @Override
     public int getType() {
         return TYPE;
+    }
+
+    public int getResponseTerminal() {
+        return responseTerminal;
+    }
+
+    public void setResponseTerminal(int responseTerminal) {
+        this.responseTerminal = responseTerminal;
     }
 
     /**
@@ -37,6 +47,7 @@ public class EvaluationConfigRequest extends UdpRequest {
         
         EvaluationConfigRequest request = new EvaluationConfigRequest();
         request.setRequestId(ByteOrderUtils.readUint64(buffer));
+        request.setResponseTerminal(ByteOrderUtils.readUint16(buffer));
         
         return request;
     }
@@ -49,6 +60,7 @@ public class EvaluationConfigRequest extends UdpRequest {
         ByteBuffer buffer = ByteOrderUtils.allocateLittleEndian(TOTAL_SIZE);
         ByteOrderUtils.writeUint16(buffer, TYPE);
         ByteOrderUtils.writeUint64(buffer, getRequestId());
+        ByteOrderUtils.writeUint16(buffer, responseTerminal);
         return buffer.array();
     }
 }

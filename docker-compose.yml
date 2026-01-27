@@ -15,6 +15,7 @@ services:
     environment:
       - ORCA_UDP_LISTEN_HOST=0.0.0.0
       - ORCA_UDP_TARGET_HOST=${ORCA_UDP_TARGET_HOST}
+      - JAVA_OPTS=-Dlogging.config=/app/config/logback-spring.xml
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s

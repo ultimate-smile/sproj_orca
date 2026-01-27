@@ -42,12 +42,12 @@ class RealWorldUdpPacketTest {
      */
     @Test
     void testRealWorldResponse() {
-        UdpResponse response = new UdpResponse();
+        TerrainResponse response = new TerrainResponse();
         response.setRequestId(20250125001L);
         response.setCount(3);
         
         // 第一个点：起点附近
-        UdpResponse.ResponseItem item1 = new UdpResponse.ResponseItem();
+        TerrainResponse.ResponseItem item1 = new TerrainResponse.ResponseItem();
         item1.setALongitude(116.397128);
         item1.setBLongitude(116.397026);
         item1.setType(1);  // 地形类型1
@@ -57,7 +57,7 @@ class RealWorldUdpPacketTest {
         response.getItems().add(item1);
         
         // 第二个点：中间点
-        UdpResponse.ResponseItem item2 = new UdpResponse.ResponseItem();
+        TerrainResponse.ResponseItem item2 = new TerrainResponse.ResponseItem();
         item2.setALongitude(116.397100);
         item2.setBLongitude(116.397050);
         item2.setType(2);
@@ -67,7 +67,7 @@ class RealWorldUdpPacketTest {
         response.getItems().add(item2);
         
         // 第三个点：终点附近
-        UdpResponse.ResponseItem item3 = new UdpResponse.ResponseItem();
+        TerrainResponse.ResponseItem item3 = new TerrainResponse.ResponseItem();
         item3.setALongitude(116.397026);
         item3.setBLongitude(116.397000);
         item3.setType(3);
@@ -80,26 +80,29 @@ class RealWorldUdpPacketTest {
         byte[] encoded = response.encode();
         
         // 解码验证
-        UdpResponse decoded = UdpResponse.decode(encoded);
+        UdpResponse decodedBase = UdpResponse.decode(encoded);
+        assertTrue(decodedBase instanceof TerrainResponse);
+        TerrainResponse decoded = (TerrainResponse) decodedBase;
+
         assertEquals(20250125001L, decoded.getRequestId());
         assertEquals(3, decoded.getCount());
         assertEquals(3, decoded.getItems().size());
         
         // 验证每个点的数据
-        UdpResponse.ResponseItem dItem1 = decoded.getItems().get(0);
+        TerrainResponse.ResponseItem dItem1 = decoded.getItems().get(0);
         assertEquals(116.397128, dItem1.getALongitude(), 0.000001);
         assertEquals(1, dItem1.getType());
         assertEquals(0.85f, dItem1.getDensity(), 0.001f);
         assertNull(dItem1.getTerrainData());
         
-        UdpResponse.ResponseItem dItem2 = decoded.getItems().get(1);
+        TerrainResponse.ResponseItem dItem2 = decoded.getItems().get(1);
         assertEquals(116.397100, dItem2.getALongitude(), 0.000001);
         assertEquals(2, dItem2.getType());
         assertEquals(0.90f, dItem2.getDensity(), 0.001f);
         assertNotNull(dItem2.getTerrainData());
         assertEquals(20, dItem2.getTerrainData().length);
         
-        UdpResponse.ResponseItem dItem3 = decoded.getItems().get(2);
+        TerrainResponse.ResponseItem dItem3 = decoded.getItems().get(2);
         assertEquals(116.397026, dItem3.getALongitude(), 0.000001);
         assertEquals(3, dItem3.getType());
         assertEquals(0.95f, dItem3.getDensity(), 0.001f);
@@ -113,12 +116,12 @@ class RealWorldUdpPacketTest {
     @Test
     void testFragmentation() {
         // 创建一个较大的响应数据
-        UdpResponse response = new UdpResponse();
+        TerrainResponse response = new TerrainResponse();
         response.setRequestId(999L);
         response.setCount(10);
         
         for (int i = 0; i < 10; i++) {
-            UdpResponse.ResponseItem item = new UdpResponse.ResponseItem();
+            TerrainResponse.ResponseItem item = new TerrainResponse.ResponseItem();
             item.setALongitude(116.397128 + i * 0.001);
             item.setBLongitude(116.397026 + i * 0.001);
             item.setType(i + 1);
@@ -159,7 +162,10 @@ class RealWorldUdpPacketTest {
         assertEquals(data.length, reassembled.length);
         
         // 验证重组后的数据可以正确解码
-        UdpResponse decoded = UdpResponse.decode(reassembled);
+        UdpResponse decodedBase = UdpResponse.decode(reassembled);
+        assertTrue(decodedBase instanceof TerrainResponse);
+        TerrainResponse decoded = (TerrainResponse) decodedBase;
+        
         assertEquals(response.getRequestId(), decoded.getRequestId());
         assertEquals(10, decoded.getCount());
         

@@ -178,8 +178,12 @@ public class UdpService {
             
             if (future != null) {
                 future.complete(response);
+                long count = 0;
+                if (response instanceof TerrainResponse) {
+                    count = ((TerrainResponse) response).getCount();
+                }
                 logger.debug("Received UDP response: requestId={}, count={}", 
-                    response.getRequestId(), response.getCount());
+                    response.getRequestId(), count);
             } else {
                 logger.warn("No pending request found for response: requestId={}", 
                     response.getRequestId());

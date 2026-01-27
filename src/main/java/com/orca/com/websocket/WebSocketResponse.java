@@ -1,6 +1,8 @@
 package com.orca.com.websocket;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.orca.com.protocol.EvaluationConfigResponse;
+import com.orca.com.protocol.TerrainResponse;
 import com.orca.com.protocol.UdpResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,15 +101,15 @@ public class WebSocketResponse {
     public WebSocketResponse() {
     }
     
-    public static WebSocketResponse fromUdpResponse(UdpResponse udpResponse, int requestType) {
+    public static WebSocketResponse fromTerrainResponse(TerrainResponse terrainResponse, int requestType) {
         WebSocketResponse response = new WebSocketResponse();
         response.type = requestType;
-        response.requestId = udpResponse.getRequestId();
+        response.requestId = terrainResponse.getRequestId();
         response.success = true;
-        response.count = udpResponse.getCount();
+        response.count = terrainResponse.getCount();
         response.items = new ArrayList<>();
         
-        for (UdpResponse.ResponseItem item : udpResponse.getItems()) {
+        for (TerrainResponse.ResponseItem item : terrainResponse.getItems()) {
             ResponseItem wsItem = new ResponseItem();
             wsItem.aLongitude = item.getALongitude();
             wsItem.bLongitude = item.getBLongitude();
@@ -120,6 +122,15 @@ public class WebSocketResponse {
             response.items.add(wsItem);
         }
         
+        return response;
+    }
+
+    public static WebSocketResponse fromEvaluationConfigResponse(EvaluationConfigResponse configResponse, int requestType) {
+        WebSocketResponse response = new WebSocketResponse();
+        response.type = requestType;
+        response.requestId = configResponse.getRequestId();
+        response.success = true;
+        // TODO: Map fields from EvaluationConfigResponse to WebSocketResponse
         return response;
     }
     

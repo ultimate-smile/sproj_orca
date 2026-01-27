@@ -10,11 +10,11 @@ class UdpResponseTest {
     
     @Test
     void testEncodeDecodeSingleItem() {
-        UdpResponse response = new UdpResponse();
+        TerrainResponse response = new TerrainResponse();
         response.setRequestId(1234567890123456789L);
         response.setCount(1);
         
-        UdpResponse.ResponseItem item = new UdpResponse.ResponseItem();
+        TerrainResponse.ResponseItem item = new TerrainResponse.ResponseItem();
         item.setALongitude(116.3974);
         item.setBLongitude(116.4074);
         item.setType(1);
@@ -27,14 +27,16 @@ class UdpResponseTest {
         byte[] encoded = response.encode();
         
         // 解码
-        UdpResponse decoded = UdpResponse.decode(encoded);
+        UdpResponse decodedBase = UdpResponse.decode(encoded);
+        assertTrue(decodedBase instanceof TerrainResponse);
+        TerrainResponse decoded = (TerrainResponse) decodedBase;
         
         // 验证
         assertEquals(response.getRequestId(), decoded.getRequestId());
         assertEquals(response.getCount(), decoded.getCount());
         assertEquals(1, decoded.getItems().size());
         
-        UdpResponse.ResponseItem decodedItem = decoded.getItems().get(0);
+        TerrainResponse.ResponseItem decodedItem = decoded.getItems().get(0);
         assertEquals(item.getALongitude(), decodedItem.getALongitude(), 0.0001);
         assertEquals(item.getBLongitude(), decodedItem.getBLongitude(), 0.0001);
         assertEquals(item.getType(), decodedItem.getType());
@@ -44,12 +46,12 @@ class UdpResponseTest {
     
     @Test
     void testEncodeDecodeMultipleItems() {
-        UdpResponse response = new UdpResponse();
+        TerrainResponse response = new TerrainResponse();
         response.setRequestId(999L);
         response.setCount(3);
         
         // 第一个item（无terrain数据）
-        UdpResponse.ResponseItem item1 = new UdpResponse.ResponseItem();
+        TerrainResponse.ResponseItem item1 = new TerrainResponse.ResponseItem();
         item1.setALongitude(116.3974);
         item1.setBLongitude(116.4074);
         item1.setType(1);
@@ -59,7 +61,7 @@ class UdpResponseTest {
         response.getItems().add(item1);
         
         // 第二个item（有20字节terrain数据）
-        UdpResponse.ResponseItem item2 = new UdpResponse.ResponseItem();
+        TerrainResponse.ResponseItem item2 = new TerrainResponse.ResponseItem();
         item2.setALongitude(116.3984);
         item2.setBLongitude(116.4084);
         item2.setType(2);
@@ -69,7 +71,7 @@ class UdpResponseTest {
         response.getItems().add(item2);
         
         // 第三个item（有40字节terrain数据）
-        UdpResponse.ResponseItem item3 = new UdpResponse.ResponseItem();
+        TerrainResponse.ResponseItem item3 = new TerrainResponse.ResponseItem();
         item3.setALongitude(116.3994);
         item3.setBLongitude(116.4094);
         item3.setType(3);
@@ -82,7 +84,9 @@ class UdpResponseTest {
         byte[] encoded = response.encode();
         
         // 解码
-        UdpResponse decoded = UdpResponse.decode(encoded);
+        UdpResponse decodedBase = UdpResponse.decode(encoded);
+        assertTrue(decodedBase instanceof TerrainResponse);
+        TerrainResponse decoded = (TerrainResponse) decodedBase;
         
         // 验证
         assertEquals(response.getRequestId(), decoded.getRequestId());

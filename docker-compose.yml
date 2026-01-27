@@ -3,7 +3,6 @@ services:
   orca:
     image: orca:latest
     container_name: cc-orca
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - cc-net

@@ -20,6 +20,8 @@ public class RequestFactory {
         switch (type) {
             case TerrainRequest.TYPE:
                 return TerrainRequest.decode(data);
+            case EvaluationConfigRequest.TYPE:
+                return EvaluationConfigRequest.decode(data);
             default:
                 throw new IllegalArgumentException("Unknown request type: " + type);
         }

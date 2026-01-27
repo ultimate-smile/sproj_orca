@@ -19,6 +19,8 @@ public class ResponseFactory {
         switch (type) {
             case TerrainResponse.TYPE:
                 return TerrainResponse.decode(data);
+            case EvaluationConfigResponse.TYPE:
+                return EvaluationConfigResponse.decode(data);
             default:
                 throw new IllegalArgumentException("Unknown response type: " + type);
         }

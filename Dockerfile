@@ -10,4 +10,5 @@ EXPOSE 19210/udp
 EXPOSE 19211/udp
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENV JAVA_OPTS=""
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

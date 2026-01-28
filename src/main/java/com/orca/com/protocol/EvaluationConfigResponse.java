@@ -9,9 +9,9 @@ import java.util.List;
  * [testBackground(128字节,定长UTF-8字符串)]
  * [evaluationPurpose(128字节,定长UTF-8字符串)]
  * [evalTaskId(64字节,定长UTF-8字符串)]
- * [testPlatformsCount(2)][testPlatforms(4 * N)]
- * [sonarTestLocationCount(2)][sonarTestLocation(4 * N)]
- * [sonarTestTasksCount(2)][sonarTestTasks(4 * N)]
+ * [testPlatformsCount(2)][testPlatforms(4 * N)] (N为testPlatformsCount的值, 4为Integer字节数)
+ * [sonarTestLocationCount(2)][sonarTestLocation(4 * N)] (N为sonarTestLocationCount的值)
+ * [sonarTestTasksCount(2)][sonarTestTasks(4 * N)] (N为sonarTestTasksCount的值)
  * [testMethod(4)]
  */
 public class EvaluationConfigResponse extends UdpResponse {

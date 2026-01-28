@@ -126,19 +126,19 @@ public class WebSocketResponse<T> {
         private String evaluationPurpose;
 
         @JsonProperty("evalTaskId")
-        private String evalTaskId;
+        private long evalTaskId;
 
         @JsonProperty("testPlatforms")
-        private List<Integer> testPlatforms;
+        private long testPlatforms;
 
         @JsonProperty("sonarTestLocation")
-        private List<Integer> sonarTestLocation;
+        private int sonarTestLocation;
 
         @JsonProperty("sonarTestTasks")
-        private List<Integer> sonarTestTasks;
+        private int sonarTestTasks;
 
         @JsonProperty("testMethod")
-        private Integer testMethod;
+        private int testMethod;
 
         public String getTestBackground() {
             return testBackground;
@@ -156,43 +156,43 @@ public class WebSocketResponse<T> {
             this.evaluationPurpose = evaluationPurpose;
         }
 
-        public String getEvalTaskId() {
+        public long getEvalTaskId() {
             return evalTaskId;
         }
 
-        public void setEvalTaskId(String evalTaskId) {
+        public void setEvalTaskId(long evalTaskId) {
             this.evalTaskId = evalTaskId;
         }
 
-        public List<Integer> getTestPlatforms() {
+        public long getTestPlatforms() {
             return testPlatforms;
         }
 
-        public void setTestPlatforms(List<Integer> testPlatforms) {
+        public void setTestPlatforms(long testPlatforms) {
             this.testPlatforms = testPlatforms;
         }
 
-        public List<Integer> getSonarTestLocation() {
+        public int getSonarTestLocation() {
             return sonarTestLocation;
         }
 
-        public void setSonarTestLocation(List<Integer> sonarTestLocation) {
+        public void setSonarTestLocation(int sonarTestLocation) {
             this.sonarTestLocation = sonarTestLocation;
         }
 
-        public List<Integer> getSonarTestTasks() {
+        public int getSonarTestTasks() {
             return sonarTestTasks;
         }
 
-        public void setSonarTestTasks(List<Integer> sonarTestTasks) {
+        public void setSonarTestTasks(int sonarTestTasks) {
             this.sonarTestTasks = sonarTestTasks;
         }
 
-        public Integer getTestMethod() {
+        public int getTestMethod() {
             return testMethod;
         }
 
-        public void setTestMethod(Integer testMethod) {
+        public void setTestMethod(int testMethod) {
             this.testMethod = testMethod;
         }
     }

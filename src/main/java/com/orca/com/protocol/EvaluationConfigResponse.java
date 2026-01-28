@@ -8,11 +8,11 @@ import java.util.List;
  * [Type(2)][RequestId(8)]
  * [testBackground(128字节,定长UTF-8字符串)]
  * [evaluationPurpose(128字节,定长UTF-8字符串)]
- * [evalTaskId(64字节,定长UTF-8字符串)]
- * [testPlatformsCount(2)][testPlatforms(4 * N)]
- * [sonarTestLocationCount(2)][sonarTestLocation(4 * N)]
- * [sonarTestTasksCount(2)][sonarTestTasks(4 * N)]
- * [testMethod(4)]
+ * [evalTaskId(8字节,数字)]
+ * [testPlatforms(8字节)]
+ * [sonarTestLocation(2字节)]
+ * [sonarTestTasks(2字节)]
+ * [testMethod(2字节)]
  */
 public class EvaluationConfigResponse extends UdpResponse {
     public static final int TYPE = 2;
@@ -28,30 +28,29 @@ public class EvaluationConfigResponse extends UdpResponse {
     private String evaluationPurpose;
 
     /**
-     * 评估任务ID
+     * 评估任务ID (改为数字类型)
      */
-    private String evalTaskId;
+    private long evalTaskId;
 
     /**
-     * 测试平台配置列表
-     * 格式：1.1**, 2.2**, 5.5**, 7.数字**
+     * 测试平台配置
      */
-    private List<Integer> testPlatforms;
+    private long testPlatforms;
 
     /**
-     * 位置（多个）
+     * 位置
      */
-    private List<Integer> sonarTestLocation;
+    private int sonarTestLocation;
 
     /**
-     * 任务序列（多个）
+     * 任务序列
      */
-    private List<Integer> sonarTestTasks;
+    private int sonarTestTasks;
 
     /**
      * 评估测试方式 0、1、2（互斥选项）
      */
-    private Integer testMethod;
+    private int testMethod;
 
     public EvaluationConfigResponse() {
     }
@@ -65,14 +64,14 @@ public class EvaluationConfigResponse extends UdpResponse {
     public byte[] encode() {
         // 计算总大小
         // Type(2) + RequestId(8)
-        // Strings: 128 + 128 + 64 = 320
-        // Lists: 2 + (4*N) for each list
-        // Integer: 4
+        // Strings: 128 + 128 = 256
+        // evalTaskId: 8
+        // testPlatforms: 8
+        // sonarTestLocation: 2
+        // sonarTestTasks: 2
+        // testMethod: 2
         
-        int size = 2 + 8 + 320 + 4; // 基础大小
-        size += 2 + (testPlatforms != null ? testPlatforms.size() * 4 : 0);
-        size += 2 + (sonarTestLocation != null ? sonarTestLocation.size() * 4 : 0);
-        size += 2 + (sonarTestTasks != null ? sonarTestTasks.size() * 4 : 0);
+        int size = 2 + 8 + 256 + 8 + 8 + 2 + 2 + 2; 
 
         java.nio.ByteBuffer buffer = ByteOrderUtils.allocateLittleEndian(size);
         ByteOrderUtils.writeUint16(buffer, TYPE);
@@ -81,15 +80,13 @@ public class EvaluationConfigResponse extends UdpResponse {
         // 写入定长字符串 (自动截断或填充)
         writeFixedString(buffer, testBackground, 128);
         writeFixedString(buffer, evaluationPurpose, 128);
-        writeFixedString(buffer, evalTaskId, 64);
-
-        // 写入列表
-        writeIntegerList(buffer, testPlatforms);
-        writeIntegerList(buffer, sonarTestLocation);
-        writeIntegerList(buffer, sonarTestTasks);
-
-        // 写入 testMethod
-        buffer.putInt(testMethod != null ? testMethod : 0);
+        
+        // 写入数值
+        ByteOrderUtils.writeUint64(buffer, evalTaskId);
+        ByteOrderUtils.writeUint64(buffer, testPlatforms);
+        ByteOrderUtils.writeUint16(buffer, sonarTestLocation);
+        ByteOrderUtils.writeUint16(buffer, sonarTestTasks);
+        ByteOrderUtils.writeUint16(buffer, testMethod);
 
         return buffer.array();
     }
@@ -108,13 +105,12 @@ public class EvaluationConfigResponse extends UdpResponse {
 
         response.testBackground = readFixedString(buffer, 128);
         response.evaluationPurpose = readFixedString(buffer, 128);
-        response.evalTaskId = readFixedString(buffer, 64);
-
-        response.testPlatforms = readIntegerList(buffer);
-        response.sonarTestLocation = readIntegerList(buffer);
-        response.sonarTestTasks = readIntegerList(buffer);
-
-        response.testMethod = buffer.getInt();
+        
+        response.evalTaskId = ByteOrderUtils.readUint64(buffer);
+        response.testPlatforms = ByteOrderUtils.readUint64(buffer);
+        response.sonarTestLocation = ByteOrderUtils.readUint16(buffer);
+        response.sonarTestTasks = ByteOrderUtils.readUint16(buffer);
+        response.testMethod = ByteOrderUtils.readUint16(buffer);
 
         return response;
     }
@@ -141,36 +137,6 @@ public class EvaluationConfigResponse extends UdpResponse {
         return new String(bytes, 0, validLen, java.nio.charset.StandardCharsets.UTF_8);
     }
 
-    // 辅助方法：写入整数列表
-    private static void writeIntegerList(java.nio.ByteBuffer buffer, List<Integer> list) {
-        int count = (list != null) ? list.size() : 0;
-        ByteOrderUtils.writeUint16(buffer, count);
-        if (list != null) {
-            for (Integer val : list) {
-                buffer.putInt(val);
-            }
-        }
-    }
-
-    // 辅助方法：读取整数列表
-    private static List<Integer> readIntegerList(java.nio.ByteBuffer buffer) {
-        if (buffer.remaining() < 2) {
-            return new java.util.ArrayList<>();
-        }
-        int count = ByteOrderUtils.readUint16(buffer);
-        java.util.ArrayList<Integer> list = new java.util.ArrayList<>(count);
-        // 如果 count 大于剩余可能的整数个数，则只读取剩余个数
-        int maxPossible = buffer.remaining() / 4;
-        if (count > maxPossible) {
-            count = maxPossible;
-        }
-        
-        for (int i = 0; i < count; i++) {
-            list.add(buffer.getInt());
-        }
-        return list;
-    }
-
     // Getters and Setters
     public String getTestBackground() {
         return testBackground;
@@ -188,43 +154,43 @@ public class EvaluationConfigResponse extends UdpResponse {
         this.evaluationPurpose = evaluationPurpose;
     }
 
-    public String getEvalTaskId() {
+    public long getEvalTaskId() {
         return evalTaskId;
     }
 
-    public void setEvalTaskId(String evalTaskId) {
+    public void setEvalTaskId(long evalTaskId) {
         this.evalTaskId = evalTaskId;
     }
 
-    public List<Integer> getTestPlatforms() {
+    public long getTestPlatforms() {
         return testPlatforms;
     }
 
-    public void setTestPlatforms(List<Integer> testPlatforms) {
+    public void setTestPlatforms(long testPlatforms) {
         this.testPlatforms = testPlatforms;
     }
 
-    public List<Integer> getSonarTestLocation() {
+    public int getSonarTestLocation() {
         return sonarTestLocation;
     }
 
-    public void setSonarTestLocation(List<Integer> sonarTestLocation) {
+    public void setSonarTestLocation(int sonarTestLocation) {
         this.sonarTestLocation = sonarTestLocation;
     }
 
-    public List<Integer> getSonarTestTasks() {
+    public int getSonarTestTasks() {
         return sonarTestTasks;
     }
 
-    public void setSonarTestTasks(List<Integer> sonarTestTasks) {
+    public void setSonarTestTasks(int sonarTestTasks) {
         this.sonarTestTasks = sonarTestTasks;
     }
 
-    public Integer getTestMethod() {
+    public int getTestMethod() {
         return testMethod;
     }
 
-    public void setTestMethod(Integer testMethod) {
+    public void setTestMethod(int testMethod) {
         this.testMethod = testMethod;
     }
 }

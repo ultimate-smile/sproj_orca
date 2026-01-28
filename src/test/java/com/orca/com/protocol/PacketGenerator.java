@@ -93,10 +93,10 @@ public class PacketGenerator {
         response.setRequestId(2002L);
         response.setTestBackground("测试背景。。。。。");
         response.setEvaluationPurpose("评估目的。。。。。");
-        response.setEvalTaskId("2026001");
-        response.setTestPlatforms(Arrays.asList(1, 2, 5, 7));
-        response.setSonarTestLocation(Arrays.asList(1, 2, 3, 4));
-        response.setSonarTestTasks(Arrays.asList(1, 2, 3, 4));
+        response.setEvalTaskId(2026001L);
+        response.setTestPlatforms(12345678L);
+        response.setSonarTestLocation(1);
+        response.setSonarTestTasks(2);
         response.setTestMethod(1);
 
         byte[] respBytes = response.encode();

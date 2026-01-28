@@ -85,7 +85,7 @@ class EvaluationSimulationTest {
         assertEquals(requestId, response.getRequestId());
         assertEquals("Test Background Info", response.getTestBackground());
         assertEquals("Purpose of Evaluation", response.getEvaluationPurpose());
-        assertEquals("TASK-2026-001", response.getEvalTaskId());
+        assertEquals(2026001L, response.getEvalTaskId());
         assertEquals(3, response.getTestPlatforms().size());
         assertEquals(1, response.getTestPlatforms().get(0));
         assertEquals(1, response.getTestMethod());
@@ -96,7 +96,7 @@ class EvaluationSimulationTest {
         response.setRequestId(requestId);
         response.setTestBackground("Test Background Info");
         response.setEvaluationPurpose("Purpose of Evaluation");
-        response.setEvalTaskId("TASK-2026-001");
+        response.setEvalTaskId(2026001L);
         response.setTestPlatforms(Arrays.asList(1, 2, 5));
         response.setSonarTestLocation(Arrays.asList(100, 200));
         response.setSonarTestTasks(Arrays.asList(10, 20, 30));

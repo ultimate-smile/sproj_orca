@@ -8,10 +8,10 @@ import java.util.List;
  * [Type(2)][RequestId(8)]
  * [testBackground(128字节,定长UTF-8字符串)]
  * [evaluationPurpose(128字节,定长UTF-8字符串)]
- * [evalTaskId(64字节,定长UTF-8字符串)]
- * [testPlatformsCount(2)][testPlatforms(4 * N)]
- * [sonarTestLocationCount(2)][sonarTestLocation(4 * N)]
- * [sonarTestTasksCount(2)][sonarTestTasks(4 * N)]
+ * [evalTaskId(8字节,数字)]
+ * [testPlatformsCount(2)][testPlatforms(2 * N)]
+ * [sonarTestLocationCount(2)][sonarTestLocation(2 * N)]
+ * [sonarTestTasksCount(2)][sonarTestTasks(2 * N)]
  * [testMethod(4)]
  */
 public class EvaluationConfigResponse extends UdpResponse {
@@ -28,9 +28,9 @@ public class EvaluationConfigResponse extends UdpResponse {
     private String evaluationPurpose;
 
     /**
-     * 评估任务ID
+     * 评估任务ID (8字节数字)
      */
-    private String evalTaskId;
+    private long evalTaskId;
 
     /**
      * 测试平台配置列表
@@ -65,14 +65,15 @@ public class EvaluationConfigResponse extends UdpResponse {
     public byte[] encode() {
         // 计算总大小
         // Type(2) + RequestId(8)
-        // Strings: 128 + 128 + 64 = 320
-        // Lists: 2 + (4*N) for each list
+        // Strings: 128 + 128 = 256
+        // evalTaskId: 8
+        // Lists: 2 + (2*N) for each list
         // Integer: 4
         
-        int size = 2 + 8 + 320 + 4; // 基础大小
-        size += 2 + (testPlatforms != null ? testPlatforms.size() * 4 : 0);
-        size += 2 + (sonarTestLocation != null ? sonarTestLocation.size() * 4 : 0);
-        size += 2 + (sonarTestTasks != null ? sonarTestTasks.size() * 4 : 0);
+        int size = 2 + 8 + 256 + 8 + 4; // 基础大小
+        size += 2 + (testPlatforms != null ? testPlatforms.size() * 2 : 0);
+        size += 2 + (sonarTestLocation != null ? sonarTestLocation.size() * 2 : 0);
+        size += 2 + (sonarTestTasks != null ? sonarTestTasks.size() * 2 : 0);
 
         java.nio.ByteBuffer buffer = ByteOrderUtils.allocateLittleEndian(size);
         ByteOrderUtils.writeUint16(buffer, TYPE);
@@ -81,12 +82,14 @@ public class EvaluationConfigResponse extends UdpResponse {
         // 写入定长字符串 (自动截断或填充)
         writeFixedString(buffer, testBackground, 128);
         writeFixedString(buffer, evaluationPurpose, 128);
-        writeFixedString(buffer, evalTaskId, 64);
+        
+        // 写入 evalTaskId (8字节)
+        ByteOrderUtils.writeUint64(buffer, evalTaskId);
 
-        // 写入列表
-        writeIntegerList(buffer, testPlatforms);
-        writeIntegerList(buffer, sonarTestLocation);
-        writeIntegerList(buffer, sonarTestTasks);
+        // 写入列表 (2字节/项)
+        writeShortList(buffer, testPlatforms);
+        writeShortList(buffer, sonarTestLocation);
+        writeShortList(buffer, sonarTestTasks);
 
         // 写入 testMethod
         buffer.putInt(testMethod != null ? testMethod : 0);
@@ -108,11 +111,14 @@ public class EvaluationConfigResponse extends UdpResponse {
 
         response.testBackground = readFixedString(buffer, 128);
         response.evaluationPurpose = readFixedString(buffer, 128);
-        response.evalTaskId = readFixedString(buffer, 64);
+        
+        // 读取 evalTaskId
+        response.evalTaskId = ByteOrderUtils.readUint64(buffer);
 
-        response.testPlatforms = readIntegerList(buffer);
-        response.sonarTestLocation = readIntegerList(buffer);
-        response.sonarTestTasks = readIntegerList(buffer);
+        // 读取列表
+        response.testPlatforms = readShortList(buffer);
+        response.sonarTestLocation = readShortList(buffer);
+        response.sonarTestTasks = readShortList(buffer);
 
         response.testMethod = buffer.getInt();
 
@@ -141,32 +147,32 @@ public class EvaluationConfigResponse extends UdpResponse {
         return new String(bytes, 0, validLen, java.nio.charset.StandardCharsets.UTF_8);
     }
 
-    // 辅助方法：写入整数列表
-    private static void writeIntegerList(java.nio.ByteBuffer buffer, List<Integer> list) {
+    // 辅助方法：写入Short列表 (2 bytes per item)
+    private static void writeShortList(java.nio.ByteBuffer buffer, List<Integer> list) {
         int count = (list != null) ? list.size() : 0;
         ByteOrderUtils.writeUint16(buffer, count);
         if (list != null) {
             for (Integer val : list) {
-                buffer.putInt(val);
+                ByteOrderUtils.writeUint16(buffer, val);
             }
         }
     }
 
-    // 辅助方法：读取整数列表
-    private static List<Integer> readIntegerList(java.nio.ByteBuffer buffer) {
+    // 辅助方法：读取Short列表 (2 bytes per item)
+    private static List<Integer> readShortList(java.nio.ByteBuffer buffer) {
         if (buffer.remaining() < 2) {
             return new java.util.ArrayList<>();
         }
         int count = ByteOrderUtils.readUint16(buffer);
         java.util.ArrayList<Integer> list = new java.util.ArrayList<>(count);
         // 如果 count 大于剩余可能的整数个数，则只读取剩余个数
-        int maxPossible = buffer.remaining() / 4;
+        int maxPossible = buffer.remaining() / 2;
         if (count > maxPossible) {
             count = maxPossible;
         }
         
         for (int i = 0; i < count; i++) {
-            list.add(buffer.getInt());
+            list.add(ByteOrderUtils.readUint16(buffer));
         }
         return list;
     }
@@ -188,11 +194,11 @@ public class EvaluationConfigResponse extends UdpResponse {
         this.evaluationPurpose = evaluationPurpose;
     }
 
-    public String getEvalTaskId() {
+    public long getEvalTaskId() {
         return evalTaskId;
     }
 
-    public void setEvalTaskId(String evalTaskId) {
+    public void setEvalTaskId(long evalTaskId) {
         this.evalTaskId = evalTaskId;
     }
 

@@ -126,7 +126,7 @@ public class WebSocketResponse<T> {
         private String evaluationPurpose;
 
         @JsonProperty("evalTaskId")
-        private String evalTaskId;
+        private Long evalTaskId;
 
         @JsonProperty("testPlatforms")
         private List<Integer> testPlatforms;
@@ -156,11 +156,11 @@ public class WebSocketResponse<T> {
             this.evaluationPurpose = evaluationPurpose;
         }
 
-        public String getEvalTaskId() {
+        public Long getEvalTaskId() {
             return evalTaskId;
         }
 
-        public void setEvalTaskId(String evalTaskId) {
+        public void setEvalTaskId(Long evalTaskId) {
             this.evalTaskId = evalTaskId;
         }
 

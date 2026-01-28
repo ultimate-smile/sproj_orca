@@ -86,7 +86,8 @@ class EvaluationSimulationTest {
         assertEquals("Test Background Info", response.getTestBackground());
         assertEquals("Purpose of Evaluation", response.getEvaluationPurpose());
         assertEquals(2026001L, response.getEvalTaskId());
-        assertEquals(12345L, response.getTestPlatforms());
+        assertEquals(3, response.getTestPlatforms().size()); // 1, 2, 5
+        assertEquals(1, response.getTestPlatforms().get(0));
         assertEquals(1, response.getTestMethod());
     }
     
@@ -96,9 +97,10 @@ class EvaluationSimulationTest {
         response.setTestBackground("Test Background Info");
         response.setEvaluationPurpose("Purpose of Evaluation");
         response.setEvalTaskId(2026001L);
-        response.setTestPlatforms(12345L);
-        response.setSonarTestLocation(100);
-        response.setSonarTestTasks(10);
+        // Bitmask for 1, 2, 5
+        response.setTestPlatforms(Arrays.asList(1, 2, 5));
+        response.setSonarTestLocation(Arrays.asList(100)); // Will be treated as single value
+        response.setSonarTestTasks(Arrays.asList(10)); // Will be treated as single value
         response.setTestMethod(1);
         
         byte[] respBytes = response.encode();

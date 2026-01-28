@@ -129,13 +129,13 @@ public class WebSocketResponse<T> {
         private long evalTaskId;
 
         @JsonProperty("testPlatforms")
-        private long testPlatforms;
+        private List<Integer> testPlatforms;
 
         @JsonProperty("sonarTestLocation")
-        private int sonarTestLocation;
+        private List<Integer> sonarTestLocation;
 
         @JsonProperty("sonarTestTasks")
-        private int sonarTestTasks;
+        private List<Integer> sonarTestTasks;
 
         @JsonProperty("testMethod")
         private int testMethod;
@@ -164,27 +164,27 @@ public class WebSocketResponse<T> {
             this.evalTaskId = evalTaskId;
         }
 
-        public long getTestPlatforms() {
+        public List<Integer> getTestPlatforms() {
             return testPlatforms;
         }
 
-        public void setTestPlatforms(long testPlatforms) {
+        public void setTestPlatforms(List<Integer> testPlatforms) {
             this.testPlatforms = testPlatforms;
         }
 
-        public int getSonarTestLocation() {
+        public List<Integer> getSonarTestLocation() {
             return sonarTestLocation;
         }
 
-        public void setSonarTestLocation(int sonarTestLocation) {
+        public void setSonarTestLocation(List<Integer> sonarTestLocation) {
             this.sonarTestLocation = sonarTestLocation;
         }
 
-        public int getSonarTestTasks() {
+        public List<Integer> getSonarTestTasks() {
             return sonarTestTasks;
         }
 
-        public void setSonarTestTasks(int sonarTestTasks) {
+        public void setSonarTestTasks(List<Integer> sonarTestTasks) {
             this.sonarTestTasks = sonarTestTasks;
         }
 

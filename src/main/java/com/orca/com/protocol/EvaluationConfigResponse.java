@@ -1,5 +1,6 @@
 package com.orca.com.protocol;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,9 +10,9 @@ import java.util.List;
  * [testBackground(128字节,定长UTF-8字符串)]
  * [evaluationPurpose(128字节,定长UTF-8字符串)]
  * [evalTaskId(8字节,数字)]
- * [testPlatforms(8字节)]
- * [sonarTestLocation(2字节)]
- * [sonarTestTasks(2字节)]
+ * [testPlatforms(8字节, 位掩码)]
+ * [sonarTestLocation(2字节, ID)]
+ * [sonarTestTasks(2字节, ID)]
  * [testMethod(2字节)]
  */
 public class EvaluationConfigResponse extends UdpResponse {
@@ -33,19 +34,22 @@ public class EvaluationConfigResponse extends UdpResponse {
     private long evalTaskId;
 
     /**
-     * 测试平台配置
+     * 测试平台配置 (位掩码对应的列表)
+     * 协议中为8字节掩码
      */
-    private long testPlatforms;
+    private List<Integer> testPlatforms;
 
     /**
-     * 位置
+     * 位置 (协议中为2字节ID)
+     * 为了前端兼容性，封装为列表
      */
-    private int sonarTestLocation;
+    private List<Integer> sonarTestLocation;
 
     /**
-     * 任务序列
+     * 任务序列 (协议中为2字节ID)
+     * 为了前端兼容性，封装为列表
      */
-    private int sonarTestTasks;
+    private List<Integer> sonarTestTasks;
 
     /**
      * 评估测试方式 0、1、2（互斥选项）
@@ -83,9 +87,16 @@ public class EvaluationConfigResponse extends UdpResponse {
         
         // 写入数值
         ByteOrderUtils.writeUint64(buffer, evalTaskId);
-        ByteOrderUtils.writeUint64(buffer, testPlatforms);
-        ByteOrderUtils.writeUint16(buffer, sonarTestLocation);
-        ByteOrderUtils.writeUint16(buffer, sonarTestTasks);
+        
+        // testPlatforms -> 8 byte bitmask
+        ByteOrderUtils.writeUint64(buffer, listToBitmask(testPlatforms));
+        
+        // sonarTestLocation -> 2 byte ID (取列表第一个元素，或0)
+        ByteOrderUtils.writeUint16(buffer, getFirstOrZero(sonarTestLocation));
+        
+        // sonarTestTasks -> 2 byte ID (取列表第一个元素，或0)
+        ByteOrderUtils.writeUint16(buffer, getFirstOrZero(sonarTestTasks));
+        
         ByteOrderUtils.writeUint16(buffer, testMethod);
 
         return buffer.array();
@@ -107,9 +118,19 @@ public class EvaluationConfigResponse extends UdpResponse {
         response.evaluationPurpose = readFixedString(buffer, 128);
         
         response.evalTaskId = ByteOrderUtils.readUint64(buffer);
-        response.testPlatforms = ByteOrderUtils.readUint64(buffer);
-        response.sonarTestLocation = ByteOrderUtils.readUint16(buffer);
-        response.sonarTestTasks = ByteOrderUtils.readUint16(buffer);
+        
+        // testPlatforms <- 8 byte bitmask
+        long platformsMask = ByteOrderUtils.readUint64(buffer);
+        response.testPlatforms = bitmaskToList(platformsMask);
+        
+        // sonarTestLocation <- 2 byte ID
+        int locationId = ByteOrderUtils.readUint16(buffer);
+        response.sonarTestLocation = singleToList(locationId);
+        
+        // sonarTestTasks <- 2 byte ID
+        int taskId = ByteOrderUtils.readUint16(buffer);
+        response.sonarTestTasks = singleToList(taskId);
+        
         response.testMethod = ByteOrderUtils.readUint16(buffer);
 
         return response;
@@ -135,6 +156,45 @@ public class EvaluationConfigResponse extends UdpResponse {
             validLen++;
         }
         return new String(bytes, 0, validLen, java.nio.charset.StandardCharsets.UTF_8);
+    }
+    
+    // 辅助方法：Bitmask 与 List 转换 (1-based index)
+    private static long listToBitmask(List<Integer> list) {
+        long mask = 0;
+        if (list != null) {
+            for (Integer id : list) {
+                if (id != null && id >= 1 && id <= 64) {
+                    mask |= (1L << (id - 1));
+                }
+            }
+        }
+        return mask;
+    }
+    
+    private static List<Integer> bitmaskToList(long mask) {
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < 64; i++) {
+            if ((mask & (1L << i)) != 0) {
+                list.add(i + 1);
+            }
+        }
+        return list;
+    }
+    
+    // 辅助方法：单值 与 List 转换
+    private static int getFirstOrZero(List<Integer> list) {
+        if (list != null && !list.isEmpty() && list.get(0) != null) {
+            return list.get(0);
+        }
+        return 0;
+    }
+    
+    private static List<Integer> singleToList(int val) {
+        List<Integer> list = new ArrayList<>();
+        if (val != 0) {
+            list.add(val);
+        }
+        return list;
     }
 
     // Getters and Setters
@@ -162,27 +222,27 @@ public class EvaluationConfigResponse extends UdpResponse {
         this.evalTaskId = evalTaskId;
     }
 
-    public long getTestPlatforms() {
+    public List<Integer> getTestPlatforms() {
         return testPlatforms;
     }
 
-    public void setTestPlatforms(long testPlatforms) {
+    public void setTestPlatforms(List<Integer> testPlatforms) {
         this.testPlatforms = testPlatforms;
     }
 
-    public int getSonarTestLocation() {
+    public List<Integer> getSonarTestLocation() {
         return sonarTestLocation;
     }
 
-    public void setSonarTestLocation(int sonarTestLocation) {
+    public void setSonarTestLocation(List<Integer> sonarTestLocation) {
         this.sonarTestLocation = sonarTestLocation;
     }
 
-    public int getSonarTestTasks() {
+    public List<Integer> getSonarTestTasks() {
         return sonarTestTasks;
     }
 
-    public void setSonarTestTasks(int sonarTestTasks) {
+    public void setSonarTestTasks(List<Integer> sonarTestTasks) {
         this.sonarTestTasks = sonarTestTasks;
     }
 

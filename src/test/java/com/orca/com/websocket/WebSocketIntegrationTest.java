@@ -135,9 +135,9 @@ class WebSocketIntegrationTest {
         configData.setTestBackground("Test Background Info");
         configData.setEvaluationPurpose("Evaluation Purpose Info");
         configData.setEvalTaskId(1001L);
-        configData.setTestPlatforms(12345L);
-        configData.setSonarTestLocation(10);
-        configData.setSonarTestTasks(100);
+        configData.setTestPlatforms(java.util.Arrays.asList(1, 2, 5));
+        configData.setSonarTestLocation(java.util.Arrays.asList(10));
+        configData.setSonarTestTasks(java.util.Arrays.asList(100));
         configData.setTestMethod(1);
         
         response.setData(configData);
@@ -148,7 +148,7 @@ class WebSocketIntegrationTest {
         assertTrue(json.contains("\"type\":2"));
         assertTrue(json.contains("\"testBackground\":\"Test Background Info\""));
         assertTrue(json.contains("\"evalTaskId\":1001"));
-        assertTrue(json.contains("\"testPlatforms\":12345"));
+        assertTrue(json.contains("\"testPlatforms\":[1,2,5]"));
         
         // Verify JSON deserialization
         WebSocketResponse decoded = objectMapper.readValue(json, WebSocketResponse.class);

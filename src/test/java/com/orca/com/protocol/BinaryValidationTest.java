@@ -135,4 +135,60 @@ class BinaryValidationTest {
         assertEquals((byte)0xAA, buffer.get(8));
         assertEquals((byte)0x99, buffer.get(9));
     }
+
+    void testEvaluationConfigResponseStructure() {
+        EvaluationConfigResponse response = new EvaluationConfigResponse();
+        response.setRequestId(0x1122334455667788L);
+        // 字符串 (128, 128)
+        response.setTestBackground(null); // 全0
+        response.setEvaluationPurpose(null); // 全0
+        // evalTaskId (8字节)
+        response.setEvalTaskId(0xAABBCCDDEEFF0011L);
+        // 列表 (空)
+        response.setTestPlatforms(null);
+        response.setSonarTestLocation(null);
+        response.setSonarTestTasks(null);
+        // Method (4字节)
+        response.setTestMethod(0x12345678);
+
+        byte[] encoded = response.encode();
+
+        // 预期结构:
+        // Type (2): 02 00
+        // RequestId (8): 88 77 66 55 44 33 22 11
+        // TestBackground (128): 全0
+        // EvaluationPurpose (128): 全0
+        // EvalTaskId (8): 11 00 FF EE DD CC BB AA
+        // TestPlatformsCount (2): 00 00
+        // SonarTestLocationCount (2): 00 00
+        // SonarTestTasksCount (2): 00 00
+        // TestMethod (4): 78 56 34 12
+        
+        int expectedSize = 2 + 8 + 128 + 128 + 8 + 2 + 2 + 2 + 4; // 284字节
+        assertEquals(expectedSize, encoded.length);
+
+        ByteBuffer buffer = ByteBuffer.wrap(encoded);
+
+        // 验证 Type
+        assertEquals(0x02, buffer.get(0));
+        assertEquals(0x00, buffer.get(1));
+
+        // 验证 RequestId
+        assertEquals((byte)0x88, buffer.get(2));
+
+        // 跳过字符串 (2 + 8 + 128 + 128 = 266)
+        // 验证 EvalTaskId (offset 266)
+        assertEquals((byte)0x11, buffer.get(266));
+        assertEquals((byte)0x00, buffer.get(267));
+        assertEquals((byte)0xFF, buffer.get(268));
+        assertEquals((byte)0xAA, buffer.get(273));
+
+        // 验证 Counts (offset 266 + 8 = 274)
+        assertEquals(0x00, buffer.get(274)); // testPlatformsCount
+        assertEquals(0x00, buffer.get(276)); // sonarTestLocationCount
+        assertEquals(0x00, buffer.get(278)); // sonarTestTasksCount
+        
+        // 验证 TestMethod (offset 280)
+        assertEquals((byte)0x78, buffer.get(280));
+    }
 }

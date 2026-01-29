@@ -83,16 +83,16 @@
 
 #### 数据结构
 
-| 字段名 | 类型 | 长度 (Byte) | 说明 |
-| :--- | :--- |:----------| :--- |
-| **RequestId** | uint64 | 8         | 对应请求的 ID |
-| **TestBackground** | String | 128       | 定长字符串，不足补0，UTF-8 |
-| **EvaluationPurpose** | String | 128       | 定长字符串，不足补0，UTF-8 |
-| **EvalTaskId** | uint64 | 8         | 定长字符串，不足补0，UTF-8 |
-| **TestPlatforms** | int32[] | 4 * N     | 平台ID列表 |
-| **SonarTestLocation** | int32[] | 4 * M     | 位置ID列表 |
-| **SonarTestTasks** | int32[] | 4 * K     | 任务ID列表 |
-| **TestMethod** | int32 | 4         | 评估方式 (0, 1, 2) |
+| 字段名 | 类型      | 长度 (Byte) | 说明 |
+| :--- |:--------|:----------| :--- |
+| **RequestId** | uint64  | 8         | 对应请求的 ID |
+| **TestBackground** | String  | 128       | 定长字符串，不足补0，UTF-8 |
+| **EvaluationPurpose** | String  | 128       | 定长字符串，不足补0，UTF-8 |
+| **EvalTaskId** | uint64  | 8         | 定长字符串，不足补0，UTF-8 |
+| **TestPlatforms** | int16[] | 2 * N     | 平台ID列表 |
+| **SonarTestLocation** | int16[] | 2 * M     | 位置ID列表 |
+| **SonarTestTasks** | int16[] | 2 * K     | 任务ID列表 |
+| **TestMethod** | int16   | 2         | 评估方式 (0, 1, 2) |
 
 #### 有效对接案例 (Hex 示例)
 

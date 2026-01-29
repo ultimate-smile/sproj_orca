@@ -84,19 +84,15 @@
 #### 数据结构
 
 | 字段名 | 类型 | 长度 (Byte) | 说明 |
-| :--- | :--- | :--- | :--- |
-| **Type** | uint16 | 2 | 固定值 `2` |
-| **RequestId** | uint64 | 8 | 对应请求的 ID |
-| **TestBackground** | String | 128 | 定长字符串，不足补0，UTF-8 |
-| **EvaluationPurpose** | String | 128 | 定长字符串，不足补0，UTF-8 |
-| **EvalTaskId** | String | 64 | 定长字符串，不足补0，UTF-8 |
-| **TestPlatformsCount** | uint16 | 2 | 平台列表元素个数 (N) |
-| **TestPlatforms** | int32[] | 4 * N | 平台ID列表 |
-| **SonarTestLocationCount**| uint16 | 2 | 位置列表元素个数 (M) |
-| **SonarTestLocation** | int32[] | 4 * M | 位置ID列表 |
-| **SonarTestTasksCount** | uint16 | 2 | 任务列表元素个数 (K) |
-| **SonarTestTasks** | int32[] | 4 * K | 任务ID列表 |
-| **TestMethod** | int32 | 4 | 评估方式 (0, 1, 2) |
+| :--- | :--- |:----------| :--- |
+| **RequestId** | uint64 | 8         | 对应请求的 ID |
+| **TestBackground** | String | 128       | 定长字符串，不足补0，UTF-8 |
+| **EvaluationPurpose** | String | 128       | 定长字符串，不足补0，UTF-8 |
+| **EvalTaskId** | uint64 | 8         | 定长字符串，不足补0，UTF-8 |
+| **TestPlatforms** | int32[] | 4 * N     | 平台ID列表 |
+| **SonarTestLocation** | int32[] | 4 * M     | 位置ID列表 |
+| **SonarTestTasks** | int32[] | 4 * K     | 任务ID列表 |
+| **TestMethod** | int32 | 4         | 评估方式 (0, 1, 2) |
 
 #### 有效对接案例 (Hex 示例)
 
